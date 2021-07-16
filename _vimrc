@@ -170,6 +170,8 @@ let g:airline_theme='molokai'
 
 noremap <leader>ld :LivedownToggle<CR>
 
+set guioptions-=m
+set guioptions-=T
 
 "set guifont=Hack:h16
 set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
