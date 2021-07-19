@@ -11,7 +11,7 @@
 Чтобы все работало: расширение plug.vim надо скачать вручную и положить в
 папку autoload, которая находится в каталоге с установленным vim.
 После скачивания в vim запускаем команду PlugInstall.
-[[https://github.com/junegunn/vim-plug]]
+[Ссылка на плагин](https://github.com/junegunn/vim-plug)
 
 Чтобы работало отображение airline - надо добавить шрифты. Скачиваем шрифты,
-пропатченные под powerline. [[https://github.com/powerline/fonts]]
+пропатченные под powerline. [Ссылка на шрифты][https://github.com/powerline/fonts]
