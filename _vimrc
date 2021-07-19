@@ -10,7 +10,8 @@ set scrolloff=999
 set encoding=utf-8
 
 "set number " show line numbers:
-set relativenumber "номер строк относительно курсора
+"set relativenumber "номер строк относительно курсора
+set number relativenumber
 set wrap linebreak nolist
 set textwidth=80
 set cursorline
@@ -39,12 +40,6 @@ imap <F4> <Esc>:call ToggleSpell()<CR>
 noremap <A-j> gT
 noremap <A-k> gt
 
-"if has("gui_running")
-"  eolorscheme desert
-"else
-"  colorscheme darkblue
-"endif
-
 " Show line number, cursor position.
 set ruler
 " Display incomplete commands.
@@ -53,18 +48,6 @@ set showcmd
 nmap <F3> a<C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR><Esc>
 imap <F3> <C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR> 
 
-" Status line
-"set laststatus=2
-"set statusline=
-"set statusline+=%-3.3n\ " buffer number
-"set statusline+=%f\ " filename
-"set statusline+=%h%m%r%w " status flags
-"set statusline+=\[%{strlen(&ft)?&ft:'none'}] " file type
-"set statusline+=%= " right align remainder
-"set statusline+=0x%-8B " character value
-"set statusline+=%-14(%l,%c%V%) " line, character
-"set statusline+=%<%P " file position
-"
 set incsearch
 set ignorecase
 set visualbell
@@ -98,8 +81,6 @@ set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNO
 "добавляем плагины в vim
 filetype plugin indent on
 set encoding=utf-8
-"set nocompatible
-"syntax enable
 
 call plug#begin('C:\Users\stolbin.es\_vim\bundle')
 Plug 'ErichDonGubler/vim-sublime-monokai'
@@ -117,26 +98,26 @@ if !exists('g:airline_symbols')
 endif
 
 " unicode symbols
-let g:airline_left_sep = '»'
-let g:airline_left_sep = '▶'
-let g:airline_right_sep = '«'
-let g:airline_right_sep = '◀'
-let g:airline_symbols.colnr = ' ㏇:'
-let g:airline_symbols.colnr = ' ℅:'
-let g:airline_symbols.crypt = '🔒'
-let g:airline_symbols.linenr = '☰'
-let g:airline_symbols.linenr = ' ␊:'
-let g:airline_symbols.linenr = ' ␤:'
-let g:airline_symbols.linenr = '¶'
-let g:airline_symbols.maxlinenr = ''
-let g:airline_symbols.maxlinenr = '㏑'
-let g:airline_symbols.branch = '⎇'
-let g:airline_symbols.paste = 'ρ'
-let g:airline_symbols.paste = 'Þ'
-let g:airline_symbols.paste = '∥'
-let g:airline_symbols.spell = 'Ꞩ'
-let g:airline_symbols.notexists = 'Ɇ'
-let g:airline_symbols.whitespace = 'Ξ'
+"let g:airline_left_sep = '»'
+"let g:airline_left_sep = '▶'
+"let g:airline_right_sep = '«'
+"let g:airline_right_sep = '◀'
+"let g:airline_symbols.colnr = ' ㏇:'
+"let g:airline_symbols.colnr = ' ℅:'
+"let g:airline_symbols.crypt = '🔒'
+"let g:airline_symbols.linenr = '☰'
+"let g:airline_symbols.linenr = ' ␊:'
+"let g:airline_symbols.linenr = ' ␤:'
+"let g:airline_symbols.linenr = '¶'
+"let g:airline_symbols.maxlinenr = ''
+"let g:airline_symbols.maxlinenr = '㏑'
+"let g:airline_symbols.branch = '⎇'
+"let g:airline_symbols.paste = 'ρ'
+"let g:airline_symbols.paste = 'Þ'
+"let g:airline_symbols.paste = '∥'
+"let g:airline_symbols.spell = 'Ꞩ'
+"let g:airline_symbols.notexists = 'Ɇ'
+"let g:airline_symbols.whitespace = 'Ξ'
 
 " powerline symbols
 let g:airline_left_sep = ''
@@ -150,28 +131,16 @@ let g:airline_symbols.linenr = ' :'
 let g:airline_symbols.maxlinenr = '☰ '
 let g:airline_symbols.dirty='⚡'
 
-" old vim-powerline symbols
-"let g:airline_left_sep = '⮀'
-"let g:airline_left_alt_sep = '⮁'
-"let g:airline_right_sep = '⮂'
-"let g:airline_right_alt_sep = '⮃'
-"let g:airline_symbols.branch = '⭠'
-"let g:airline_symbols.readonly = '⭤'
-"let g:airline_symbols.linenr = '⭡'
-
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#keymap#enabled = 0
 let g:airline_section_z = "\ue0a1:%l/%L Col:%c"
 let g:Powerline_symbols='unicode'
 let g:airline#extensions#xkblayout#enabled=0
 let g:airline_theme='molokai'
-"let g:airline_left_sep='>'
-"let g:airline_right_sep='<'
 
 noremap <leader>ld :LivedownToggle<CR>
 
 set guioptions-=m
 set guioptions-=T
 
-"set guifont=Hack:h16
 set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
