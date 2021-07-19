@@ -14,4 +14,4 @@
 [Ссылка на плагин](https://github.com/junegunn/vim-plug)
 
 Чтобы работало отображение airline - надо добавить шрифты. Скачиваем шрифты,
-пропатченные под powerline. [Ссылка на шрифты][https://github.com/powerline/fonts]
+пропатченные под powerline. [Ссылка на шрифты](https://github.com/powerline/fonts)
