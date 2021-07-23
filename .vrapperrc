@@ -1,5 +1,7 @@
 map пе gt
 map пЕ gT
+map пп gg
+map пв gd
 
 map Ф A
 map И B
@@ -53,3 +55,6 @@ map ц w
 map ч x
 map н y
 map я z
+
+"add search
+map . /
