@@ -13,7 +13,7 @@ set encoding=utf-8
 "set relativenumber "номер строк относительно курсора
 set number relativenumber
 set wrap linebreak nolist
-set textwidth=80
+set textwidth=120
 set cursorline
 
 noremap <SPACE> <C-F>
@@ -53,30 +53,6 @@ set ignorecase
 set visualbell
 
 set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz
-"set keymap=russian-jcukenwin    " настраиваем переключение раскладок клавиатуры по C-^
-"set iminsert=0                  " раскладка по умолчанию для ввода - английская
-"set imsearch=0                  " раскладка по умолчанию для поиска - английская
-"
-"" переключение на русскую/английскую раскладку по ^f (Ctrl + F)
-"cmap <silent> <C-F> <C-^>
-"imap <silent> <C-F> <C-^>X<Esc>:call MyKeyMapHighlight()<CR>a<C-H>
-"nmap <silent> <C-F> a<C-^><Esc>:call MyKeyMapHighlight()<CR>
-"vmap <silent> <C-F> <Esc>a<C-^><Esc>:call MyKeyMapHighlight()<CR>gv
-"
-"" Переключение раскладок и индикация выбранной в данный момент раскладки -->
-"" При английской раскладке статусная строка текущего окна будет синего цвета, а при русской - красного
-"function MyKeyMapHighlight()
-"	if &iminsert == 0
-"		hi StatusLine ctermfg=DarkBlue guifg=DarkBlue
-"    else
-"        hi StatusLine ctermfg=DarkRed guifg=DarkRed
-"    endif
-"endfunction
-"" Вызываем функцию, чтобы она установила цвета при запуске Vim'a
-"call MyKeyMapHighlight()
-"" При изменении активного окна будет выполняться обновление индикации текущей раскладки
-"au WinEnter * :call MyKeyMapHighlight()
-"" <--
 
 "добавляем плагины в vim
 filetype plugin indent on
@@ -88,6 +64,11 @@ Plug 'vim-airline/vim-airline'
 Plug 'ryanoasis/vim-devicons'
 Plug 'shime/vim-livedown'
 Plug 'vim-airline/vim-airline-themes'
+"плагин для org-mode
+"Plug 'jceb/vim-orgmode'
+"Plug 'axvr/org.vim'
+"Plug 'dhruvasagar/vim-dotoo'
+Plug 'aserebryakov/vim-todo-lists'
 call plug#end()
 
 colorscheme sublimemonokai
@@ -96,28 +77,6 @@ colorscheme sublimemonokai
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
-
-" unicode symbols
-"let g:airline_left_sep = '»'
-"let g:airline_left_sep = '▶'
-"let g:airline_right_sep = '«'
-"let g:airline_right_sep = '◀'
-"let g:airline_symbols.colnr = ' ㏇:'
-"let g:airline_symbols.colnr = ' ℅:'
-"let g:airline_symbols.crypt = '🔒'
-"let g:airline_symbols.linenr = '☰'
-"let g:airline_symbols.linenr = ' ␊:'
-"let g:airline_symbols.linenr = ' ␤:'
-"let g:airline_symbols.linenr = '¶'
-"let g:airline_symbols.maxlinenr = ''
-"let g:airline_symbols.maxlinenr = '㏑'
-"let g:airline_symbols.branch = '⎇'
-"let g:airline_symbols.paste = 'ρ'
-"let g:airline_symbols.paste = 'Þ'
-"let g:airline_symbols.paste = '∥'
-"let g:airline_symbols.spell = 'Ꞩ'
-"let g:airline_symbols.notexists = 'Ɇ'
-"let g:airline_symbols.whitespace = 'Ξ'
 
 " powerline symbols
 let g:airline_left_sep = ''
@@ -140,7 +99,37 @@ let g:airline_theme='molokai'
 
 noremap <leader>ld :LivedownToggle<CR>
 
+"for todo-list
+let g:VimTodoListsCustomsKeyMapper = 'VimTodoListsCustomMappings'
+
+function! VimTodoListsCustomMappings()
+    nnoremap <buffer> s :VimTodoListsToggleItem<CR>
+    nnoremap <buffer> <Space> :VimTodoListsToggleItem<CR>
+    noremap <buffer> <leader>e :silent call VimTodoListsSetItemMode()<CR>
+endfunction
+
+"Dates to todo list
+let g:VimTodoListsDatesEnabled = 1
+
+if has("gui_running")
+    set lines=35 columns=150
+else
+    if exists("+lines")
+        set lines=50
+    endif
+    if exists("+columns")
+        set columns=100
+    endif
+endif
+
 set guioptions-=m
 set guioptions-=T
 
 set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
+
+
+"для сохранения размеров окна и позиции
+"set sessionoptions+=resize,winpos
+"autocmd VIMEnter * :source C:/tmp/session.vim
+"autocmd VIMLeave * :mksession! C:/tmp/session.vim
+"Не сохраяет power line....
