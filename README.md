@@ -17,3 +17,11 @@
 пропатченные под powerline. [Ссылка на шрифты](https://github.com/powerline/fonts)
 
 Добавил папку с пакетным файлом для конвертации с помощью pandoc.
+
+
+
+## Установка gvim как редактора по умолчанию для коммитов
+
+`git config --global core.editor "c:\tools\vim\vim82\gvim.exe' -f -i NONE"`
+
+Предполагается что `gvim` установлен в папку `c:\tools\vim`
