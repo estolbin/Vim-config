@@ -62,13 +62,14 @@ call plug#begin('C:\Users\stolbin.es\_vim\bundle')
 Plug 'ErichDonGubler/vim-sublime-monokai'
 Plug 'vim-airline/vim-airline'
 Plug 'ryanoasis/vim-devicons'
-Plug 'shime/vim-livedown'
+"Plug 'shime/vim-livedown'
 Plug 'vim-airline/vim-airline-themes'
 "плагин для org-mode
 "Plug 'jceb/vim-orgmode'
 "Plug 'axvr/org.vim'
 "Plug 'dhruvasagar/vim-dotoo'
 Plug 'aserebryakov/vim-todo-lists'
+Plug 'preservim/nerdtree'
 call plug#end()
 
 colorscheme sublimemonokai
@@ -127,6 +128,20 @@ set guioptions-=T
 
 set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
 
+"abbreviation for lines
+iab <expr> -- repeat('-', 80)
+
+"редактирование .vimrc
+nnoremap ,v :source $MYVIMRC<CR>
+nnoremap ,e :edit $MYVIMRC<CR>
+
+"перенос строк
+nnoremap <A-j> :m .+1<CR>==
+nnoremap <A-k> :m .-2<CR>==
+inoremap <A-j> <Esc>:m .+1<CR>==gi
+inoremap <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <A-j> :m '>+1<CR>gv=gv
+vnoremap <A-k> :m '<-2<CR>gv=gv
 
 "для сохранения размеров окна и позиции
 "set sessionoptions+=resize,winpos
