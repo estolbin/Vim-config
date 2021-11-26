@@ -48,6 +48,13 @@ set showcmd
 nmap <F3> a<C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR><Esc>
 imap <F3> <C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR> 
 
+"For c++ compile
+"autocmd BufNewFile *.cpp execute "0r ~/.vim/template/".input("Template name: ").".cpp"
+"compile
+map <F5> :!g++ % -o %:r -static <CR> 
+"compile and run
+map <F9> :!g++ % -o %:r -static && %:r <CR>
+
 set incsearch
 set ignorecase
 set visualbell
@@ -135,6 +142,9 @@ iab <expr> -- repeat('-', 80)
 nnoremap ,v :source $MYVIMRC<CR>
 nnoremap ,e :edit $MYVIMRC<CR>
 
+"my simple todo in markdown
+inoremap ,td - [ ]
+
 "перенос строк
 nnoremap <A-j> :m .+1<CR>==
 nnoremap <A-k> :m .-2<CR>==
@@ -142,6 +152,22 @@ inoremap <A-j> <Esc>:m .+1<CR>==gi
 inoremap <A-k> <Esc>:m .-2<CR>==gi
 vnoremap <A-j> :m '>+1<CR>gv=gv
 vnoremap <A-k> :m '<-2<CR>gv=gv
+
+"скобки
+inoremap { {}<Left>
+inoremap {<CR> {<CR>}<Esc>O
+inoremap {{ }
+inoremap {} {}
+inoremap ( ()<Left>
+autocmd FileType html, htm inoremap < <><Left>
+
+"select all
+"map <C-a> gg v G
+"map <C-c> "+y
+"map <C-v> "+p
+
+"NERDTree toggle
+nmap <F6> :NERDTreeToggle<CR>
 
 "для сохранения размеров окна и позиции
 "set sessionoptions+=resize,winpos
