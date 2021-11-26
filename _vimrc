@@ -1,3 +1,4 @@
+set guicursor=
 set nocompatible
 syntax on
 set smartindent
@@ -14,7 +15,6 @@ set encoding=utf-8
 set number relativenumber
 set wrap linebreak nolist
 set textwidth=120
-set cursorline
 
 noremap <SPACE> <C-F>
 set diffopt+=vertical
@@ -69,17 +69,16 @@ call plug#begin('C:\Users\stolbin.es\_vim\bundle')
 Plug 'ErichDonGubler/vim-sublime-monokai'
 Plug 'vim-airline/vim-airline'
 Plug 'ryanoasis/vim-devicons'
-"Plug 'shime/vim-livedown'
 Plug 'vim-airline/vim-airline-themes'
-"плагин для org-mode
-"Plug 'jceb/vim-orgmode'
-"Plug 'axvr/org.vim'
-"Plug 'dhruvasagar/vim-dotoo'
 Plug 'aserebryakov/vim-todo-lists'
 Plug 'preservim/nerdtree'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'ayu-theme/ayu-vim'
 call plug#end()
 
-colorscheme sublimemonokai
+"colorscheme sublimemonokai
+colorscheme ayu
 
 
 if !exists('g:airline_symbols')
@@ -103,9 +102,10 @@ let g:airline#extensions#keymap#enabled = 0
 let g:airline_section_z = "\ue0a1:%l/%L Col:%c"
 let g:Powerline_symbols='unicode'
 let g:airline#extensions#xkblayout#enabled=0
-let g:airline_theme='molokai'
+"let g:airline_theme='molokai'
+let g:airline_theme='ayu_dark'
 
-noremap <leader>ld :LivedownToggle<CR>
+"noremap <leader>ld :LivedownToggle<CR>
 
 "for todo-list
 let g:VimTodoListsCustomsKeyMapper = 'VimTodoListsCustomMappings'
@@ -143,7 +143,8 @@ nnoremap ,v :source $MYVIMRC<CR>
 nnoremap ,e :edit $MYVIMRC<CR>
 
 "my simple todo in markdown
-inoremap ,td - [ ]
+"inoremap ,td - [ ]
+nnoremap <leader>td i - [ ]<Esc>
 
 "перенос строк
 nnoremap <A-j> :m .+1<CR>==
@@ -161,10 +162,23 @@ inoremap {} {}
 inoremap ( ()<Left>
 autocmd FileType html, htm inoremap < <><Left>
 
-"select all
-"map <C-a> gg v G
-"map <C-c> "+y
-"map <C-v> "+p
+let mapleader = " "
+nnoremap <leader>pv :Vex<CR>
+nnoremap <leader><CR> :so $MYVIMRC<CR>
+nnoremap <C-p> :GFiles<CR>
+nnoremap <leader>pf :Files<CR>
+nnoremap <C-j> :cnext<CR>
+nnoremap <C-k> :cpreg<CR>
+vnoremap <leader>p "_dP
+vnoremap <leader>y "+y
+" Копирование в системный буфер обмена
+nnoremap <leader>y "+y
+" Копирование всего файла в системный буфер обмена
+nnoremap <leader>Y gg"+yG
+
+" Перемещение строк
+vnoremap J :m '>+1<CR>gv=gv
+vnoremap K :m '<-2<CR>gv=gv
 
 "NERDTree toggle
 nmap <F6> :NERDTreeToggle<CR>
