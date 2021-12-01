@@ -13,8 +13,42 @@ set encoding=utf-8
 "set number " show line numbers:
 "set relativenumber "номер строк относительно курсора
 set number relativenumber
-set wrap linebreak nolist
+"set wrap 
+set nowrap "added
+set linebreak nolist
 set textwidth=120
+
+"установка разных курсоров
+" SI - режим вставки, SR - замена, EI - нормальный режим
+" 1 - мигающий, 2 - обычный, 3 - мигающее подчеркивание, 
+" 4 - просто подчеркивание, 5 - мигающая верт черта, 6 - просто вертикальная черта
+set ttimeoutlen=10
+let &t_SI.="\e[5 q" 
+let &t_SR.="\e[3 q"
+let &t_EI.="\e[1 q"
+
+set showmatch "show matching bracket
+
+set omnifunc=syntaxcomplete#Complete
+
+set nofoldenable
+set foldmethod=syntax
+
+au BufRead,BufNewFile *.h set ft=c
+au BufRead,BufNewFile *.cpp set ft=c
+au BufRead,BufNewFile *.ini set ft=dosini
+
+if(has('win32') || has('win64'))
+    let g:isWin = 1
+else
+    let g:isWin = 0
+endif
+
+if has('gui_running')
+    let g:isGUI = 1
+else
+    let g:isGUI = 0
+endif
 
 noremap <SPACE> <C-F>
 set diffopt+=vertical
@@ -37,8 +71,10 @@ nmap <F4> :call ToggleSpell()<CR>
 imap <F4> <Esc>:call ToggleSpell()<CR>
 
 " shortcuts for moving between tabs
-noremap <A-j> gT
-noremap <A-k> gt
+"noremap <A-j> gT
+noremap <leader>j gT
+"noremap <A-k> gt
+noremap <leader>k gt
 
 " Show line number, cursor position.
 set ruler
@@ -59,7 +95,20 @@ set incsearch
 set ignorecase
 set visualbell
 
-set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz
+"set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz
+""if has('win32') || has('win64') || has('win16')
+if g:isWin
+    set keymap=russian-jcukenwin
+    set iminsert=0
+    set imsearch=0
+endif
+""Попробуем повесить переключение раскладки в vim по winkey
+"noremap! <C-Space> <C-^>
+
+let g:XkbSwitchEnabled = 1
+let g:XkbSwitchIMappings = ['ru']
+let g:XkbSwitchSkipIMappings =
+    \ {'cpp' :['.', '>', ':', '{<CR>', '/*', '/*<CR>']}
 
 "добавляем плагины в vim
 filetype plugin indent on
@@ -75,11 +124,11 @@ Plug 'preservim/nerdtree'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'ayu-theme/ayu-vim'
+Plug 'lyokha/vim-xkbswitch'
 call plug#end()
 
 "colorscheme sublimemonokai
 colorscheme ayu
-
 
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
@@ -119,8 +168,12 @@ endfunction
 "Dates to todo list
 let g:VimTodoListsDatesEnabled = 1
 
-if has("gui_running")
+"if has("gui_running")
+if g:isGUI
     set lines=35 columns=150
+    if g:isWin
+"        au GUIEnter * sim ~x
+    endif
 else
     if exists("+lines")
         set lines=50
@@ -130,8 +183,14 @@ else
     endif
 endif
 
+"autocmd VimEnter * call libcallnr("gvimfullscreen_64.dll", "ToggleFullScreen", 1)
+
+map <F11> <Esc>:call libcallnr("gvimfullscreen_64.dll", "ToggleFullScreen", 0)<CR>
+
 set guioptions-=m
 set guioptions-=T
+set guioptions-=r
+set guioptions-=L
 
 set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
 
@@ -160,7 +219,7 @@ inoremap {<CR> {<CR>}<Esc>O
 inoremap {{ }
 inoremap {} {}
 inoremap ( ()<Left>
-autocmd FileType html, htm inoremap < <><Left>
+autocmd FileType html, htm, xml inoremap < <><Left>
 
 let mapleader = " "
 nnoremap <leader>pv :Vex<CR>
@@ -177,8 +236,8 @@ nnoremap <leader>y "+y
 nnoremap <leader>Y gg"+yG
 
 " Перемещение строк
-vnoremap J :m '>+1<CR>gv=gv
-vnoremap K :m '<-2<CR>gv=gv
+"vnoremap J :m '>+1<CR>gv=gv
+"vnoremap K :m '<-2<CR>gv=gv
 
 "NERDTree toggle
 nmap <F6> :NERDTreeToggle<CR>

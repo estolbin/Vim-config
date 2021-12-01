@@ -25,3 +25,11 @@
 `git config --global core.editor "c:\tools\vim\vim82\gvim.exe' -f -i NONE"`
 
 Предполагается что `gvim` установлен в папку `c:\tools\vim`
+
+## Добавил переключение раскладки с помощью xkbswitch
+
+Сначала устанавливаем [xkbswitch](https://github.com/DeXP/xkb-switch-win) для Windows
+Потом добавляем плагин в .vimrc
+
+## vim\_fundamentals
+Курс по vim - оттуда пример настройки 
