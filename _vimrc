@@ -81,8 +81,8 @@ set ruler
 " Display incomplete commands.
 set showcmd
 " To insert timestamp, press F3.
-nmap <F3> a<C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR><Esc>
-imap <F3> <C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR> 
+"nmap <F3> a<C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR><Esc>
+"imap <F3> <C-R>=strftime("%Y-%m-%d %a %I:%M %p")<CR> 
 
 "For c++ compile
 "autocmd BufNewFile *.cpp execute "0r ~/.vim/template/".input("Template name: ").".cpp"
