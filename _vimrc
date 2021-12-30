@@ -7,16 +7,26 @@ set tabstop=4
 set expandtab
 set smarttab
 
+set termguicolors
+
+set ttyfast     " faster redrawing
+set lazyredraw  " only redraw when necessary
+
 set scrolloff=999
 set encoding=utf-8
+
+" установка русской локали для вим
+set langmenu=ru_ru
+set helplang=ru,en
 
 "set number " show line numbers:
 "set relativenumber "номер строк относительно курсора
 set number relativenumber
-"set wrap 
+set wrap breakindent
 set nowrap "added
 set linebreak nolist
 set textwidth=120
+set wildmode=longest,list,full wildmenu
 
 "установка разных курсоров
 " SI - режим вставки, SR - замена, EI - нормальный режим
@@ -38,17 +48,16 @@ au BufRead,BufNewFile *.h set ft=c
 au BufRead,BufNewFile *.cpp set ft=c
 au BufRead,BufNewFile *.ini set ft=dosini
 
-if(has('win32') || has('win64'))
-    let g:isWin = 1
-else
-    let g:isWin = 0
+let s:is_win = (has('win32') || has('win64'))
+
+if s:is_win
+    set shell=cmd.exe
+    set shellcmdflag=/c
+    set encoding=utf-8
 endif
 
-if has('gui_running')
-    let g:isGUI = 1
-else
-    let g:isGUI = 0
-endif
+
+let s:is_gui = has('gui_running')
 
 noremap <SPACE> <C-F>
 set diffopt+=vertical
@@ -71,9 +80,7 @@ nmap <F4> :call ToggleSpell()<CR>
 imap <F4> <Esc>:call ToggleSpell()<CR>
 
 " shortcuts for moving between tabs
-"noremap <A-j> gT
 noremap <leader>j gT
-"noremap <A-k> gt
 noremap <leader>k gt
 
 " Show line number, cursor position.
@@ -96,8 +103,7 @@ set ignorecase
 set visualbell
 
 "set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz
-""if has('win32') || has('win64') || has('win16')
-if g:isWin
+if s:is_win
     set keymap=russian-jcukenwin
     set iminsert=0
     set imsearch=0
@@ -107,13 +113,14 @@ endif
 
 let g:XkbSwitchEnabled = 1
 let g:XkbSwitchIMappings = ['ru']
-let g:XkbSwitchSkipIMappings =
-    \ {'cpp' :['.', '>', ':', '{<CR>', '/*', '/*<CR>']}
+let g:XkbSwitchLib = 'c:\tools\vim\vim82'
+"let g:XkbSwitchSkipIMappings = \ {'cpp' :['.', '>', ':', '{<CR>', '/*', '/*<CR>']}
 
 "добавляем плагины в vim
 filetype plugin indent on
 set encoding=utf-8
 
+" test for org-mode vim
 call plug#begin('C:\Users\stolbin.es\_vim\bundle')
 Plug 'ErichDonGubler/vim-sublime-monokai'
 Plug 'vim-airline/vim-airline'
@@ -125,7 +132,32 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'ayu-theme/ayu-vim'
 Plug 'lyokha/vim-xkbswitch'
+
+Plug 'junegunn/vim-journal'
+Plug 'junegunn/goyo.vim'
+
+Plug 'dkarter/bullets.vim'
+
+Plug 'jceb/vim-orgmode' "the org-mode once
+"helps plugins for orgmode
+Plug 'vim-scripts/utl.vim'
+Plug 'tpope/vim-repeat'
+Plug 'yegappan/taglist'
+Plug 'preservim/tagbar'
+Plug 'tpope/vim-speeddating'
+Plug 'chrisbra/NrrwRgn'
+Plug 'mattn/calendar-vim'
+Plug 'inkarkat/vim-SyntaxRange'
+
+Plug 'tibabit/vim-templates' "templates for vim
 call plug#end()
+
+let g:bullets_enabled_file_types = [
+            \ 'markdown',
+            \ 'text',
+            \ 'gitcommit',
+            \ 'scratch'
+            \ ]
 
 "colorscheme sublimemonokai
 colorscheme ayu
@@ -151,7 +183,6 @@ let g:airline#extensions#keymap#enabled = 0
 let g:airline_section_z = "\ue0a1:%l/%L Col:%c"
 let g:Powerline_symbols='unicode'
 let g:airline#extensions#xkblayout#enabled=0
-"let g:airline_theme='molokai'
 let g:airline_theme='ayu_dark'
 
 "noremap <leader>ld :LivedownToggle<CR>
@@ -169,9 +200,9 @@ endfunction
 let g:VimTodoListsDatesEnabled = 1
 
 "if has("gui_running")
-if g:isGUI
+if s:is_gui
     set lines=35 columns=150
-    if g:isWin
+    if s:is_win
 "        au GUIEnter * sim ~x
     endif
 else
@@ -221,7 +252,7 @@ inoremap {} {}
 inoremap ( ()<Left>
 autocmd FileType html, htm, xml inoremap < <><Left>
 
-let mapleader = " "
+let mapleader = ","
 nnoremap <leader>pv :Vex<CR>
 nnoremap <leader><CR> :so $MYVIMRC<CR>
 nnoremap <C-p> :GFiles<CR>
@@ -235,15 +266,36 @@ nnoremap <leader>y "+y
 " Копирование всего файла в системный буфер обмена
 nnoremap <leader>Y gg"+yG
 
-" Перемещение строк
-"vnoremap J :m '>+1<CR>gv=gv
-"vnoremap K :m '<-2<CR>gv=gv
 
 "NERDTree toggle
 nmap <F6> :NERDTreeToggle<CR>
+
+
+let g:python3_host_prog='c:\Python38\python.exe'
+
+function! TransparentBackground()
+    highlight Normal guibg=NONE ctermbg=NONE
+    highlight LineNr guibg=NONE ctermbg=NONE
+    set fillchars+=vert:\|
+    highlight VertSplit gui=NONE guibg=NONE guifg=#444444 cterm=NONE ctermbg=NONE ctermfg=gray
+endfunction
+
+augroup MyColors
+"    autocmd ColorScheme * call TransparentBackground()
+augroup END
+
+"setup for orgmode
+let g:org_todo_keywords=['TODO', 'NEXT', '|', 'DONE']
+let g:org_todo_keyword_faces=[['NEXT', 'cyan']]
+let g:org_agenda_files="d:\orgmode\index.org"
 
 "для сохранения размеров окна и позиции
 "set sessionoptions+=resize,winpos
 "autocmd VIMEnter * :source C:/tmp/session.vim
 "autocmd VIMLeave * :mksession! C:/tmp/session.vim
 "Не сохраяет power line....
+"
+"some settings from: http://github.com/mhinz/vim-galore
+"and http:/github.com/mhinz/dotfiles
+
+" vim: sw=2 sts=2 tw=0 fdm=marker
