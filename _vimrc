@@ -113,7 +113,8 @@ endif
 
 let g:XkbSwitchEnabled = 1
 let g:XkbSwitchIMappings = ['ru']
-let g:XkbSwitchLib = 'c:\tools\vim\vim82'
+let g:XkbSwitchLib = 'c:\tools\vim\vim82\libxkbswitch64.dll'
+let g:XkbSwitchILayout = 'ru'
 "let g:XkbSwitchSkipIMappings = \ {'cpp' :['.', '>', ':', '{<CR>', '/*', '/*<CR>']}
 
 "добавляем плагины в vim
