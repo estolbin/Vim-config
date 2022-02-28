@@ -1,3 +1,7 @@
+set rtp-=$VIMRUNTIME
+let $VIMRUNTIME = 'c:\tools\vim\vim82'
+let $VIM=$VIMRUNTIME
+
 set guicursor=
 set nocompatible
 syntax on
@@ -6,6 +10,8 @@ set shiftwidth=4
 set tabstop=4
 set expandtab
 set smarttab
+
+set backspace=indent,eol,start
 
 set termguicolors
 
@@ -44,8 +50,8 @@ set omnifunc=syntaxcomplete#Complete
 set nofoldenable
 set foldmethod=syntax
 
-au BufRead,BufNewFile *.h set ft=c
-au BufRead,BufNewFile *.cpp set ft=c
+au BufRead,BufNewFile *.h set ft=cpp
+au BufRead,BufNewFile *.cpp set ft=cpp
 au BufRead,BufNewFile *.ini set ft=dosini
 
 let s:is_win = (has('win32') || has('win64'))
@@ -54,8 +60,27 @@ if s:is_win
     set shell=cmd.exe
     set shellcmdflag=/c
     set encoding=utf-8
+    "set shellslash
 endif
 
+if s:is_win
+    let s:data_dir = expand('$LOCALAPPDATA/vimrc')
+endif
+
+" save and load views automaticly
+"set viewoptions=cursor,folds
+"let &viewdir = s:data_dir.'/view'
+"call mkdir(&viewdir,'p')
+"augroup vimrc
+"  autocmd BufWritePost *
+"        \ if expand('%') != '' && &buftype !~ 'nofile'
+"        \|  mkview
+"        \|endif
+"  autocmd BufRead *
+"        \ if expand('%') != '' && &buftype !~ 'nofile'
+"        \|  silent loadview
+"        \|endif
+"augroup END
 
 let s:is_gui = has('gui_running')
 
@@ -94,9 +119,10 @@ set showcmd
 "For c++ compile
 "autocmd BufNewFile *.cpp execute "0r ~/.vim/template/".input("Template name: ").".cpp"
 "compile
-map <F5> :!g++ % -o %:r -static <CR> 
+map <F5> :!g++ % -o %:r -static -lgdi32<CR> 
 "compile and run
-map <F9> :!g++ % -o %:r -static && %:r <CR>
+map <F9> <esc>:w <CR> :!g++ % -o %:r -static -lgdi32 && %:r <CR>
+map <F10> :!g++ -o %:r % glad.c -lglfw3 -lopengl32 -lgdi32 -fpermissive -static && %:r <CR>
 
 set incsearch
 set ignorecase
@@ -112,14 +138,30 @@ endif
 "noremap! <C-Space> <C-^>
 
 let g:XkbSwitchEnabled = 1
-let g:XkbSwitchIMappings = ['ru']
 let g:XkbSwitchLib = 'c:\tools\vim\vim82\libxkbswitch64.dll'
-let g:XkbSwitchILayout = 'ru'
+let g:XkbSwitchIMappings = ['ru']
+let g:XkbSwitchIMappingsTr = {
+          \ 'ru':
+          \ {'<': 'qwertyuiop[]asdfghjkl;''zxcvbnm,.`/'.
+          \       'QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?~@#$^&|',
+          \  '>': 'йцукенгшщзхъфывапролджэячсмитьбюё.'.
+          \       'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё"№;:?/'}
+          \ }
+let g:XkbSwitchDynamicKeymap = 1
+let g:XkbSwitchKeymapNames = {'1': 'russian-jcukenwin'}
+
+
+autocmd BufEnter * let b:XkbSwitchNLayout = 'us'
+autocmd BufNewFile * let b:XkbSwitchNLayout = 'us'
 "let g:XkbSwitchSkipIMappings = \ {'cpp' :['.', '>', ':', '{<CR>', '/*', '/*<CR>']}
+
+if s:is_win && has('gui_runnung')
+  language messages ru_RU.UTF-8
+  set encoding=utf-8
+endif
 
 "добавляем плагины в vim
 filetype plugin indent on
-set encoding=utf-8
 
 " test for org-mode vim
 call plug#begin('C:\Users\stolbin.es\_vim\bundle')
