@@ -1,7 +1,3 @@
-set rtp-=$VIMRUNTIME
-let $VIMRUNTIME = 'c:\tools\vim\vim82'
-let $VIM=$VIMRUNTIME
-
 set guicursor=
 set nocompatible
 syntax on
@@ -68,19 +64,19 @@ if s:is_win
 endif
 
 " save and load views automaticly
-"set viewoptions=cursor,folds
-"let &viewdir = s:data_dir.'/view'
-"call mkdir(&viewdir,'p')
-"augroup vimrc
-"  autocmd BufWritePost *
-"        \ if expand('%') != '' && &buftype !~ 'nofile'
-"        \|  mkview
-"        \|endif
-"  autocmd BufRead *
-"        \ if expand('%') != '' && &buftype !~ 'nofile'
-"        \|  silent loadview
-"        \|endif
-"augroup END
+set viewoptions=cursor,folds
+let &viewdir = s:data_dir.'/view'
+call mkdir(&viewdir,'p')
+augroup vimrc
+  autocmd BufWritePost *
+        \ if expand('%') != '' && &buftype !~ 'nofile'
+        \|  mkview
+        \|endif
+  autocmd BufRead *
+        \ if expand('%') != '' && &buftype !~ 'nofile'
+        \|  silent loadview
+        \|endif
+augroup END
 
 let s:is_gui = has('gui_running')
 
@@ -148,7 +144,7 @@ let g:XkbSwitchIMappingsTr = {
           \       'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё"№;:?/'}
           \ }
 let g:XkbSwitchDynamicKeymap = 1
-let g:XkbSwitchKeymapNames = {'1': 'russian-jcukenwin'}
+let g:XkbSwitchKeymapNames = {'ru': 'russian-jcukenwin'}
 
 
 autocmd BufEnter * let b:XkbSwitchNLayout = 'us'
@@ -257,9 +253,46 @@ else
     endif
 endif
 
-"autocmd VimEnter * call libcallnr("gvimfullscreen_64.dll", "ToggleFullScreen", 1)
 
-map <F11> <Esc>:call libcallnr("gvimfullscreen_64.dll", "ToggleFullScreen", 0)<CR>
+"for full screen gvim
+if has('gui_running') && has('libcall')
+  let g:MyVimLib = $VIMRUNTIME.'/gvimfullscreen.dll'
+  function ToggleFullScreen()
+    call libcallnr(g:MyVimLib, "ToggleFullScreen", 0)
+  endfunction
+
+  "Alt+Enter
+  map <A-Enter> <Esc>:call ToggleFullScreen()<CR>
+
+  let g:VimAlpha = 240
+  function! SetAlpha(alpha)
+    let g:VimAlpha = g:VimAlpha + a:alpha
+    if g:VimAlpha < 180
+      let g:VimAlpha = 180
+    endif
+    if g:VimAlpha > 255
+      let g:VimAlpha = 255
+    endif
+    call libcallnr(g:MyVimLib, 'SetAlpha', g:VimAlpha)
+  endfunction
+
+  "Shift+Y
+  nmap <s-y> <Esc>:call SetAlpha(3)<CR>
+  "Shift+T
+  nmap <s-t> <Esc>:call SetAlpha(-3)<CR>
+
+  let g:VimTopMost = 0
+  function! SwitchVimTopMostMode()
+    if g:VimTopMost == 0
+      let g:VimTopMost = 1
+    else
+      let g:VimTopMost = 0
+    endif
+    call libcallnr(g:MyVimLib, 'EnableTopMost', g:VimTopMost)
+  endfunction
+  "Shift+R
+  nmap <s-r> <Esc>:call SwitchVimTopMostMode()<CR>
+endif  
 
 set guioptions-=m
 set guioptions-=T
