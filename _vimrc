@@ -20,6 +20,10 @@ Plug 'insanum/votl'
 Plug 'vim-scripts/restore_view.vim'
 Plug 'vimwiki/vimwiki', {'branch':'dev'}
 Plug 'godlygeek/tabular'
+
+Plug 'tpope/vim-surround'
+Plug 'jiangmiao/auto-pairs'
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
 call plug#end()
 
 let items = ["<bar>", "\\", "/", ":", ".", "*", "_" ]
@@ -186,7 +190,7 @@ noremap <silent> ,cc :<C-B>silent <C-E>s/^/<C-R>=escape(b:comment_leader,'\/')<C
 noremap <silent> ,cu :<C-B>silent <C-E>s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:nohlsearch<CR>      
 
 
-"set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz
+" set langmap=ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz
 if s:is_win
     set keymap=russian-jcukenwin
     set iminsert=0
@@ -194,22 +198,24 @@ if s:is_win
 endif
 
 let g:XkbSwitchEnabled = 1
-let g:XkbSwitchLib = 'c:\tools\vim\vim82\libxkbswitch64.dll'
+let g:XkbSwitchIMappingsTrData = 'charmap\charmap.txt'
 let g:XkbSwitchIMappings = ['ru']
-let g:XkbSwitchIMappingsTr = {
-          \ 'ru':
-          \ {'<': 'qwertyuiop[]asdfghjkl;''zxcvbnm,.`/'.
-          \       'QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?~@#$^&|',
-          \  '>': 'йцукенгшщзхъфывапролджэячсмитьбюё.'.
-          \       'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё"№;:?/'}
-          \ }
-let g:XkbSwitchDynamicKeymap = 1
-let g:XkbSwitchKeymapNames = {'ru': 'russian-jcukenwin'}
-
+let g:XkbSwitchSkipMappings = {'*' : ['[',']','{','}',"'"]}
+" let g:XkbSwitchIMappings = ['ru']
+let g:XkbSwitchLib = 'c:\tools\vim\vim82\libxkbswitch64.dll'
+" let g:XkbSwitchIMappingsTr = {
+"       \'ru':
+"       \{'<' : 'qwertyuiop[]asdfghjkl;''zxcvbnm,.`/'.
+"       \       'QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?~@#$^&|',
+"       \'>' :  'йцукенгшщзхъфывапролджэячсмитьбюё.'.
+"       \       'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё"№;:?/'}
+"       \}
+" 
+" let g:XkbSwitchDynamicKeymap = 1
+" let g:XkbSwitchKeymapNames = {'ru': 'russian-jcukenwin'}
+" 
 " autocmd BufEnter * let b:XkbSwitchNLayout = 'us'
-autocmd BufEnter * let b:XkbSwitchNLayout = '1'
 " autocmd BufNewFile * let b:XkbSwitchNLayout = 'us'
-autocmd BufNewFile * let b:XkbSwitchNLayout = '1'
 "let g:XkbSwitchSkipIMappings = \ {'cpp' :['.', '>', ':', '{<CR>', '/*', '/*<CR>']}
 
 
@@ -318,12 +324,12 @@ vnoremap <A-j> :m '>+1<CR>gv=gv
 vnoremap <A-k> :m '<-2<CR>gv=gv
 
 "скобки
-inoremap { {}<Left>
-inoremap {<CR> {<CR>}<Esc>O
-inoremap {{ }
-inoremap {} {}
-inoremap ( ()<Left>
-autocmd FileType html, htm, xml inoremap < <><Left>
+" inoremap { {}<Left>
+" inoremap {<CR> {<CR>}<Esc>O
+" inoremap {{ }
+" inoremap {} {}
+" inoremap ( ()<Left>
+" autocmd FileType html, htm, xml inoremap < <><Left>
 
 "let mapleader = ","
 "for outliner
@@ -347,11 +353,34 @@ nmap <F6> :NERDTreeToggle<CR>
 
 let g:python3_host_prog='c:\Python38\python.exe'
 
+command! Diary VimwikiDiaryIndex
+augroup vimwikigroup
+  autocmd!
+  " automaticly update links on read diary
+  autocmd BufRead,BufNewFile diary.md VimwikiDiaryGenerateLinks
+augroup end
+
+
 " setting for vim wiki
 let g:vimwiki_global_ext = 0
 let g:vimwiki_ext2syntax = {'.md': 'markdown','.markdown': 'markdown','.mdown': 'markdown'}
 let g:vimwiki_root = 'd:\vimwiki'
 let g:vimwiki_listsyms = ' ✗.○●✓'
+
+let vimwiki_default = {}
+let vimwiki_default.path = '~\vimwiki'
+let vimwiki_default.syntax = 'markdown'
+let vimwiki_default.ext = '.md'
+let vimwiki_default.name = 'Work wiki'
+
+let vimwiki_home = {}
+let vimwiki_home.path = '~\Dropbox\projects'
+let vimwiki_home.syntax = 'markdown'
+let vimwiki_home.ext = '.md'
+let vimwiki_home.name = 'Personal wiki'
+
+let g:vimwiki_list = [vimwiki_default, vimwiki_home]
+
 " let g:vimwiki_list = [
 "             \{'path': 'd:\vimwiki\projects', 'syntax': 'markdown', 'ext': 'md'},
 "             \{'path': 'd:\vimwiki', 'syntax': 'markdown', 'ext': '.md'}]
