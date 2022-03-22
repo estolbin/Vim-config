@@ -42,13 +42,15 @@
 >Вводим имя переменной LANG, значение ru_RU.UTF-8.
 >
 >Если по каким-то причинам вы не можете создавать переменные окружения, тогда можно добавить несколько строк в _vimrc:
-
+```
 set encoding=utf-8
 
 " Отображение кириллицы во внутренних сообщениях программы
 lan mes ru_RU.UTF-8
 
 " Отображение кириллицы в меню
+
 source $VIMRUNTIME/delmenu.vim
 set langmenu=ru_RU.UTF-8
 source $VIMRUNTIME/menu.vim
+```
