@@ -3,7 +3,7 @@ Plug 'ErichDonGubler/vim-sublime-monokai'
 Plug 'vim-airline/vim-airline'
 Plug 'ryanoasis/vim-devicons'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'aserebryakov/vim-todo-lists'
+" Plug 'aserebryakov/vim-todo-lists'
 Plug 'preservim/nerdtree'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
@@ -23,7 +23,7 @@ Plug 'godlygeek/tabular'
 
 Plug 'tpope/vim-surround'
 Plug 'jiangmiao/auto-pairs'
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 call plug#end()
 
 let items = ["<bar>", "\\", "/", ":", ".", "*", "_" ]
@@ -53,6 +53,7 @@ set ttyfast     " faster redrawing
 set lazyredraw  " only redraw when necessary
 set scrolloff=999
 set encoding=utf-8
+lan mes ru_RU.UTF-8
 " установка русской локали для вим
 set langmenu=ru_ru
 set helplang=ru,en
@@ -82,7 +83,8 @@ set guioptions-=T
 set guioptions-=r
 set guioptions-=L
 
-set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
+" set guifont=Source\ Code\ Pro\ for\ Powerline:h10:cANSI
+set guifont=Source\ Code\ Pro\ for\ Powerline:h10
 "установка разных курсоров
 " SI - режим вставки, SR - замена, EI - нормальный режим
 " 1 - мигающий, 2 - обычный, 3 - мигающее подчеркивание, 
@@ -197,12 +199,12 @@ if s:is_win
     set imsearch=0
 endif
 
-let g:XkbSwitchEnabled = 1
-let g:XkbSwitchIMappingsTrData = 'charmap\charmap.txt'
-let g:XkbSwitchIMappings = ['ru']
-let g:XkbSwitchSkipMappings = {'*' : ['[',']','{','}',"'"]}
+" let g:XkbSwitchEnabled = 1
+" let g:XkbSwitchIMappingsTrData = 'charmap\charmap.txt'
 " let g:XkbSwitchIMappings = ['ru']
-let g:XkbSwitchLib = 'c:\tools\vim\vim82\libxkbswitch64.dll'
+" let g:XkbSwitchSkipMappings = {'*' : ['[',']','{','}',"'"]}
+" " let g:XkbSwitchIMappings = ['ru']
+" let g:XkbSwitchLib = 'c:\tools\vim\vim82\libxkbswitch64.dll'
 " let g:XkbSwitchIMappingsTr = {
 "       \'ru':
 "       \{'<' : 'qwertyuiop[]asdfghjkl;''zxcvbnm,.`/'.
@@ -381,10 +383,84 @@ let vimwiki_home.name = 'Personal wiki'
 
 let g:vimwiki_list = [vimwiki_default, vimwiki_home]
 
+au BufNewFile ~/vimwiki/diary/*.md 
+      \ call append(0, [
+      \ "# " . split(expand('%:r'),'\')[-1], "",
+      \ "## TODO:", "",
+      \ "## DONE:", "",
+      \ "## NOTES"])
+
 " let g:vimwiki_list = [
 "             \{'path': 'd:\vimwiki\projects', 'syntax': 'markdown', 'ext': 'md'},
 "             \{'path': 'd:\vimwiki', 'syntax': 'markdown', 'ext': '.md'}]
 
+" еще одна попытка запустить русский язык в вим...
+map ё `
+map й q
+map ц w
+map у e
+map к r
+map е t
+map н y
+map г u
+map ш i
+map щ o
+map з p
+map х [
+map ъ ]
+map ф a
+map ы s
+map в d
+map а f
+map п g
+map р h
+map о j
+map л k
+map д l
+map ж ;
+map э '
+map я z
+map ч x
+map с c
+map м v
+map и b
+map т n
+map ь m
+map б ,
+map ю .
+map Ё ~
+map Й Q
+map Ц W
+map У E
+map К R
+map Е T
+map Н Y
+map Г U
+map Ш I
+map Щ O
+map З P
+map Х {
+map Ъ }
+map Ф A
+map Ы S
+map В D
+map А F
+map П G
+map Р H
+map О J
+map Л K
+map Д L
+map Ж :
+map Э "
+map Я Z
+map Ч X
+map С C
+map М V
+map И B
+map Т N
+map Ь M
+map Б <
+map Ю >
 
 
 " vim: sw=2 sts=2 tw=0 fdm=marker
