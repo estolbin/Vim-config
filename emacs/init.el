@@ -1,15 +1,13 @@
+;; -*- lexical-binding: t; -*-
 (load-theme 'monokai t)
 (setq frame-title-format "emacs")
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(set-default 'cursor-type 'hbar)
-(ido-mode)
-(column-number-mode)
-(show-paren-mode)
-(global-hl-line-mode)
-(winner-mode t)
-(windmove-default-keybindings)
+
+(require 'package)
+(customize-set-variable 'package-archives
+                        `(("melpa" . "https://melpa.org/packages/")
+                          ,@package-archives))
+(customize-set-variable 'package-enable-at-startup nil)
+(package-initialize)
 
 ;; install use-package, if not installed
 (unless (package-installed-p 'use-package)
@@ -19,54 +17,164 @@
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
 ;; save disk space from backup
-(setq delete-old-versions -1)
-(setq version-control t)
-(setq vc-make-backup-files t)
+;;(setq delete-old-versions -1)
+;;(setq version-control t)
+;;(setq vc-make-backup-files t)
 ;;(setq auto-save-file-name-transforms '((".*" "~/emacs.d/auto-save-list" t)))
 
 ;; set shot version "yes" and "no"
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(require 'package)
-(require 'use-package)
+(use-package quelpa
+  :ensure t
+  :defer t
+  :custom
+  (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
 
-(add-to-list 'package-archives
-	     '("melpa" . "http://melpa.org/packages/")
-	     t)
+(use-package quelpa-use-package
+  :ensure t)
 
-(add-to-list 'package-archives
-	     '("marmalade" . "http://marmalade-repo.org/packages/")
-	     t)
+(use-package which-key
+  :defer 0
+  :diminish which-key-mode
+  :config
+  (which-key-mode)
+  (setq which-key-idle-delay 1))
 
-(package-initialize)
+(use-package emacs
+  :load-path "secrets"
+  :init
+  (put 'narrow-to-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+  (fset 'x-popup-menu #'ignore)
+  :custom
+  (frame-resize-pixelwise t)
+  (default-frame-alist '((menu-bar-lines 0)
+                         (tool-bar-lines 0)
+                         (vertical-scroll-bars)))
+  (scroll-step 1)
+  (inhibit-startup-screen t "Don't show splash screen")
+  (use-dialog-box nil "Disable dialog boxes")
+  (x-gtk-use-system-tooltips nil)
+  (use-file-dialog nil)
+  (enable-recursive-minibuffers t "Allow minibuffer commands in the minibuffer")
+  (indent-tabs-mode nil "Spaces!")
+  (tab-width 4)
+  (debug-on-quit nil)
+  :config
+  ;; Terminal emacs doesn't have it
+  (when (fboundp 'set-fontset-font)
+    ;; a workaround for old charsets
+    (set-fontset-font "fontset-default" 'cyrillic
+                      (font-spec :registry "iso10646-1" :script 'cyrillic))
+    ;; TODO: is it possible to not hardcode fonts?
+    (set-fontset-font t 'symbol
+                      (font-spec :family
+                                 (if (eq system-type 'darwin)
+                                     "Apple Color Emoji"
+                                   "Symbola"))
+                      nil 'prepend)))
+
+(use-package files
+  :hook
+  (before-save . delete-trailing-whitespace)
+  :custom
+  (require-final-newline t)
+  ;; backup settings
+  (backup-by-copying t)
+  (backup-directory-alist
+   `((".*" . ,(locate-user-emacs-file "backups"))))
+  (delete-old-versions t)
+  (kept-new-versions 6)
+  (kept-old-versions 2)
+  (version-control t))
+
+(use-package autorevert
+  :defer 0.1)
+
+(use-package mule
+  :defer 0.1
+  :config
+  (prefer-coding-system 'utf-8)
+  (set-language-environment "UTF-8")
+  (set-terminal-coding-system 'utf-8))
+
+(use-package ispell
+  :defer t
+  :custom
+  (ispell-local-dictionary-alist
+   '(("russian"
+      "[АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя’A-Za-z]"
+      "[^АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя’A-Za-z]"
+      "[-']"  nil ("-d" "ru_RU,en_US") nil utf-8)))
+  (ispell-program-name "hunspell")
+  (ispell-dictionary "russian")
+  (ispell-really-aspell nil)
+  (ispell-really-hunspell t)
+  (ispell-encoding8-command t)
+  (ispell-silently-savep t))
+
+(use-package flyspell
+  :defer t
+  :custom
+  (flyspell-delay 1))
+
+(use-package flyspell-correct-ivy
+  :ensure t
+  :bind (:map flyspell-mode-map
+              ("C-c $" . flyspell-correct-at-point)))
+
+(use-package font-lock
+  :defer t
+  :custom-face
+  (font-lock-comment-face ((t (:inherit font-lock-comment-face :italic t))))
+  (font-lock-doc-face ((t (:inherit font-lock-doc-face :italic t))))
+  (font-lock-string-face ((t (:inherit font-lock-string-face :italic t)))))
+
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 
-(ac-config-default)
-
-(nlinum-mode)
 (global-undo-tree-mode)
 (global-set-key (kbd "M-/") 'undo-tree-vizualize)
 (global-set-key (kbd "C-M-z") 'switch-window)
 (global-set-key (kbd "C->") 'ace-jump-mode)
 
-(powerline-center-theme)
+(use-package gcmh
+  :ensure t
+  :demand t
+  :config
+  (gcmh-mode 1))
 
-(setq powerline-default-separator 'wave)
+;; for speed-up
+(use-package fnhh
+  :quelpa
+  (fnhh :repo "a13/fnhh" :fetcher github)
+  :config
+  (fnhh-mode 1))
+
+(require 'powerline)
+;;(powerline-center-theme)
+;;(powerline-center-evil-theme)
+;;(powerline-vim-theme)
+;;(powerline-default-theme)
+
+;;(setq powerline-default-separator 'wave)
 
 (unless (package-installed-p 'evil)
   (package-install 'evil))
 
 ;; Enable Evil
-;;(require 'evil)
-;;(evil-mode 1)
 (use-package evil
 	     :ensure t
 	     :init
+         (setq evil-want-integration t)
+         (setq evil-want-keybindings nil)
 	     (setq evil-vsplit-window-right t)
 	     (setq evil-split-window-below t)
 	     (setq evil-want-C-i-jump nil)
 	     (setq evil-want-C-u-scroll t)
+         (setq evil-respect-visual-line-mode t)
+         (setq evil-undo-system 'undo-tree)
 	     :config
 	     (evil-mode 1))
 
@@ -97,32 +205,29 @@
 ;; Org-mode
 (global-font-lock-mode 1)
 
+;; doom-modeline.... 
+(use-package doom-modeline
+             :ensure t
+             :init (doom-modeline-mode 1)
+             :custom ((doom-modeline-height 15)))
 
 
-(setq inhibit-splash-screen t)
+;;(require 'org)
+(use-package calendar
+  :defer t
+  :custom
+  (calendar-week-start-day 1))
 
-;; utf 8
-;;(set-language-environment "UTF-8")
-;;(prefer-coding-system 'utf-8)
-;;(set-default-coding-systems 'utf-8)
-;;(set-terminal-coding-system 'utf-8)
-;;(set-keyboard-coding-system 'utf-8)
-;;(setq default-buffer-file-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(when (display-graphic-p)
-  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
-
-(transient-mark-mode 1)
-
-(require 'org)
-
-;; for org-mode
-;;(global-set-key (kbd "C-c l") #'org-store-link)
-;;(global-set-key (kbd "C-c a") #'org-agenda)
-;;(global-set-key (kbd "C-c c") #'org-capture)
-;;(global-set-key (kbd "C-c b") #'org-iswitchb)
-
-
+(use-package org
+  :defer t
+  ;; to be sure we have the latest Org version
+  ;; :ensure org-plus-contrib
+  :hook
+  ;;(org-mode . variable-pitch-mode)
+  (org-mode . visual-line-mode)
+  :custom
+  (org-adapt-indentation t)
+  (org-src-tab-acts-natively t))
 
 ;; Files
 (setq org-directory "d:/myorg/")
@@ -182,7 +287,7 @@
 
 ;; TODO
 (setq org-todo-keywords
-      '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+      '((sequence "TODO(t)" "NEXT(n)" "HOLD(h@/!)" "|" "DONE(d)")))
 
 (defun log-todo-next-creation-date (&rest ignore)
   "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
@@ -220,13 +325,13 @@
 (setq org-agenda-custom-commands
       '(("d" "Today's Tasks"
 	 ((tags-todo
-	   "Sprint+Active+PRIORITY=\"A\""
+	   "Sprint+Active=\"A\""
 	   ((org-agenda-files '("d:/myorg/goals.org"))
 	    (org-agenda-overriding-header "Цели на текущий спринт")))
 	  (agenda "" ((org-agenda-span 1)
 		      (org-agenda-overriding-header "Сегодня")))))
 	("w" "Задачи на неделю"
-	 ((tags-todo "Sprint+Active"
+	 ((tags-todo "Sprint+Active=\"A\""
 		     ((org-agenda-files '("d:/myorg/goals.org"))
 		      (org-agenda-overriding-header "Цели на текущий спринт")))
 	  (agenda)))))
@@ -280,7 +385,7 @@
 ;;	("BACK" . (foreground "MediumPurple3" :weight bold))))
 	 
 ;; Agenda setup
-;;(setq org-agenda-window-setup 'current-window)
+(setq org-agenda-window-setup 'current-window)
 ;;(setq org-agenda-span 'day)
 
 
@@ -296,8 +401,8 @@
 ;;	 "* IDEA %?\nAdded: %U\n" :prepend t :kill-buffer t)
 ;;	))
 
-(setq org-src-fontify-natively t)
-(setq org-src-tab-acts-natively t)
+;;(setq org-src-fontify-natively t)
+;;(setq org-src-tab-acts-natively t)
 
 
 ;; Custom Key Bindings
@@ -305,8 +410,21 @@
 (global-set-key (kbd "<f11>") 'org-clock-goto)
 
 ;; org-bullets
-(require 'org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+;;(require 'org-bullets)
+;;(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(use-package org-bullets
+  :ensure t
+  :custom
+  ;; org-bullets-bullet-list
+  ;; default: "◉ ○ ✸ ✿"
+  ;; large: ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶
+  ;; Small: ► • ★ ▸
+  (org-bullets-bullet-list '("•"))
+  ;; others: ▼, ↴, ⬎, ⤷,…, and ⋱.
+  ;; (org-ellipsis "⤵")
+  (org-ellipsis "…")
+  :hook
+  (org-mode . org-bullets-mode))
 
 (setq org-hide-emphasis-markers t
       org-fontify-done-headline t
@@ -336,41 +454,29 @@
 (setq org-habit-graph-column 80)
 (setq org-habit-show-habits-only-for-today nil)
 
+;; for cyrillic keyboard
+(use-package unipunct-ng
+  :quelpa
+  (unipunct-ng
+   :fetcher url
+   :url "https://raw.githubusercontent.com/a13/xkb-custom/master/contrib/unipunct-ng.el"))
 
-;;(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
-;; '(package-selected-packages
-;;   '(dashboard all-the-icons page-break-lines org-bullets undo-tree switch-window smex powerline nlinum monokai-theme evil ace-jump-mode ac-clang)))
-;;(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
-;; '(hl-line ((t (:extend t :background "#3C3D37" :height 1.0)))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(evil-org org-evil use-package undo-tree switch-window smex powerline page-break-lines org-bullets nlinum monokai-theme evil dashboard all-the-icons ace-jump-mode ac-clang)))
-;;(custom-set-faces
-;; ;; custom-set-faces was added by Custom.
-;; ;; If you edit it by hand, you could mess it up, so be careful.
-;; ;; Your init file should contain only one such instance.
-;; ;; If there is more than one, they won't work right.
-;; '(org-level-1 ((t (:inherit default :extend nil :foreground "#FD971F" :weight normal :height 1.0))))
-;; '(org-level-2 ((t (:inherit default :extend nil :foreground "#A6E22E" :weight normal :height 1.0))))
-;; '(org-level-3 ((t (:inherit default :extend nil :foreground "#66D9EF" :weight normal :height 1.0))))
-;; '(org-level-4 ((t (:inherit default :extend nil :foreground "#E6DB74" :weight normal :height 1.0))))
-;; '(org-level-5 ((t (:inherit default :extend nil :foreground "#A1EFE4" :weight normal :height 1.0))))
-;; '(org-level-6 ((t (:inherit default :extend nil :foreground "#A6E22E")))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(use-package reverse-im
+  :ensure t
+  :demand t
+  :after unipunct-ng char-fold
+  :bind
+  ("M-T" . reverse-im-translate-word)
+  :custom
+  (reverse-im-char-fold t)
+  (reverse-im-read-char-advice-function #'reverse-im-read-char-exclude)
+  (reverse-im-input-methods '("russian-unipunct-ng"))
+  :config
+  (reverse-im-mode t))
+
+
+;; Store automatic customization options elsewhere
+(setq custom-file (locate-user-emacs-file "custom.el"))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
