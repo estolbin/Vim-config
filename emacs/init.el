@@ -1,482 +1,430 @@
-;; -*- lexical-binding: t; -*-
-(load-theme 'monokai t)
-(setq frame-title-format "emacs")
+(defvar efs/default-font-size 110)
+
+(defvar org-dir "~/Dropbox/org/")
+
+(setq inhibit-startup-message t)
+(setq auto-revert-verbose nil)
+(setq global-auto-revert-mode t)
+
+;; run server if not running
+(cond ((eq system-type 'windows-nt)
+        (require 'server)
+        (unless (server-running-p)
+          (server-start))))
+
+(defvar emacs-autosave-directory
+  (concat user-emacs-directory "autosaves/"))
+
+(setq backup-directory-alist
+      `((".*" . ,emacs-autosave-directory))
+      auto-save-file-name-transforms
+      `((".*" ,emacs-autosave-directory t)))
+
+(setq undo-tree-history-directory-alist '((".*" . "~/.emacs.d/undo/")))
+;;(setq
+;; backup-by-copying t
+;; backup-directory-alist '(("." . "~/.emacs.d/saves/"))
+;; delete-old-versions t
+;; kept-new-versions 6
+;; kept-old-versions 2
+;; version-control t)
+
+(setq gc-cons-threshold (* 50 1000 1000))
+
+(defun efs/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+	   (format "%.2f seconds"
+		   (float-time
+		    (time-subtract after-init-time before-init-time)))
+	   gcs-done))
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(set-fringe-mode 10)
+
+(menu-bar-mode -1)
+
+(setq visible-bell t)
+
+;;(set-face-attribute 'default nil :height 110)
+;;(set-face-attribute 'fixed-pitch nil :height 120)
+;;(set-face-attribute 'variable-pitch nil :height 130)
+
+(add-to-list 'default-frame-alist '(font . "Fira Code"))
+(set-face-attribute 'default nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
+(set-face-attribute 'fixed-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
+
+
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(set-language-environment 'UTF-8)
+(defalias 'yes-or-no-p 'y-or-n-p)
 
 (require 'package)
-(customize-set-variable 'package-archives
-                        `(("melpa" . "https://melpa.org/packages/")
-                          ,@package-archives))
-(customize-set-variable 'package-enable-at-startup nil)
-(package-initialize)
 
-;; install use-package, if not installed
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("org" . "https://orgmode.org/elpa/")
+			 ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
-;; set another directory to backups
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+(require 'use-package)
+(setq use-package-always-ensure t)
 
-;; save disk space from backup
-;;(setq delete-old-versions -1)
-;;(setq version-control t)
-;;(setq vc-make-backup-files t)
-;;(setq auto-save-file-name-transforms '((".*" "~/emacs.d/auto-save-list" t)))
+(column-number-mode)
+(global-display-line-numbers-mode t)
 
-;; set shot version "yes" and "no"
-(fset 'yes-or-no-p 'y-or-n-p)
+(dolist (mode '(org-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(use-package quelpa
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+	 :map ivy-minibuffer-map
+	 ("TAB" . ivy-alt-done)
+	 ("C-l" . ivy-alt-done)
+	 ("C-j" . ivy-next-line)
+	 ("C-k" . ivy-previous-line)
+	 :map ivy-switch-buffer-map
+	 ("C-k" . ivy-previous-line)
+	 ("C-l" . ivy-done)
+	 ("C-d" . ivy-switch-buffer-kill)
+	 :map ivy-reverse-i-search-map
+	 ("C-k" . ivy-previous-line)
+	 ("C-d" . ivy-reverse-i-search-kill))
+  :config
+  (ivy-mode 1))
+
+;;(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
+
+(use-package all-the-icons)
+
+
+(use-package doom-modeline
   :ensure t
-  :defer t
-  :custom
-  (quelpa-update-melpa-p nil "Don't update the MELPA git repo."))
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
 
-(use-package quelpa-use-package
-  :ensure t)
+(use-package doom-themes
+  :init (load-theme 'doom-nord t))
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package which-key
   :defer 0
+  :init (which-key-mode)
   :diminish which-key-mode
   :config
-  (which-key-mode)
   (setq which-key-idle-delay 1))
 
-(use-package emacs
-  :load-path "secrets"
+(use-package ivy-rich
+  :after ivy
   :init
-  (put 'narrow-to-region 'disabled nil)
-  (put 'downcase-region 'disabled nil)
-  (fset 'x-popup-menu #'ignore)
-  :custom
-  (frame-resize-pixelwise t)
-  (default-frame-alist '((menu-bar-lines 0)
-                         (tool-bar-lines 0)
-                         (vertical-scroll-bars)))
-  (scroll-step 1)
-  (inhibit-startup-screen t "Don't show splash screen")
-  (use-dialog-box nil "Disable dialog boxes")
-  (x-gtk-use-system-tooltips nil)
-  (use-file-dialog nil)
-  (enable-recursive-minibuffers t "Allow minibuffer commands in the minibuffer")
-  (indent-tabs-mode nil "Spaces!")
-  (tab-width 4)
-  (debug-on-quit nil)
+  (ivy-rich-mode 1))
+
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+	 ("C-x b" . counsel-ibuffer)
+	 ("C-x C-f" . counsel-find-file)
+	 :map minibuffer-local-map
+	 ("C-r" . 'counsel-minibuffer-history))
   :config
-  ;; Terminal emacs doesn't have it
-  (when (fboundp 'set-fontset-font)
-    ;; a workaround for old charsets
-    (set-fontset-font "fontset-default" 'cyrillic
-                      (font-spec :registry "iso10646-1" :script 'cyrillic))
-    ;; TODO: is it possible to not hardcode fonts?
-    (set-fontset-font t 'symbol
-                      (font-spec :family
-                                 (if (eq system-type 'darwin)
-                                     "Apple Color Emoji"
-                                   "Symbola"))
-                      nil 'prepend)))
+  (setq ivy-initial-inputs-alist nil))
 
-(use-package files
-  :hook
-  (before-save . delete-trailing-whitespace)
-  :custom
-  (require-final-newline t)
-  ;; backup settings
-  (backup-by-copying t)
-  (backup-directory-alist
-   `((".*" . ,(locate-user-emacs-file "backups"))))
-  (delete-old-versions t)
-  (kept-new-versions 6)
-  (kept-old-versions 2)
-  (version-control t))
-
-(use-package autorevert
-  :defer 0.1)
-
-(use-package mule
-  :defer 0.1
+(use-package general
+  :after evil
   :config
-  (prefer-coding-system 'utf-8)
-  (set-language-environment "UTF-8")
-  (set-terminal-coding-system 'utf-8))
+  (general-create-definer efs/leader-keys
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
 
-(use-package ispell
-  :defer t
-  :custom
-  (ispell-local-dictionary-alist
-   '(("russian"
-      "[АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя’A-Za-z]"
-      "[^АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя’A-Za-z]"
-      "[-']"  nil ("-d" "ru_RU,en_US") nil utf-8)))
-  (ispell-program-name "hunspell")
-  (ispell-dictionary "russian")
-  (ispell-really-aspell nil)
-  (ispell-really-hunspell t)
-  (ispell-encoding8-command t)
-  (ispell-silently-savep t))
+  (efs/leader-keys
+   "t"  '(:ignore t :which-key "toggles")
+   "tt" '(counsel-load-theme :which-key "choose theme")
+   "oa" 'org-agenda-list
+   "oA" 'org-agenda
+   "oc" 'org-capture))
 
-(use-package flyspell
-  :defer t
-  :custom
-  (flyspell-delay 1))
-
-(use-package flyspell-correct-ivy
-  :ensure t
-  :bind (:map flyspell-mode-map
-              ("C-c $" . flyspell-correct-at-point)))
-
-(use-package font-lock
-  :defer t
-  :custom-face
-  (font-lock-comment-face ((t (:inherit font-lock-comment-face :italic t))))
-  (font-lock-doc-face ((t (:inherit font-lock-doc-face :italic t))))
-  (font-lock-string-face ((t (:inherit font-lock-string-face :italic t)))))
-
-(global-set-key (kbd "M-x") 'smex)
-(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
-
-(global-undo-tree-mode)
-(global-set-key (kbd "M-/") 'undo-tree-vizualize)
-(global-set-key (kbd "C-M-z") 'switch-window)
-(global-set-key (kbd "C->") 'ace-jump-mode)
-
-(use-package gcmh
-  :ensure t
-  :demand t
-  :config
-  (gcmh-mode 1))
-
-;; for speed-up
-(use-package fnhh
-  :quelpa
-  (fnhh :repo "a13/fnhh" :fetcher github)
-  :config
-  (fnhh-mode 1))
-
-(require 'powerline)
-;;(powerline-center-theme)
-;;(powerline-center-evil-theme)
-;;(powerline-vim-theme)
-;;(powerline-default-theme)
-
-;;(setq powerline-default-separator 'wave)
-
-(unless (package-installed-p 'evil)
-  (package-install 'evil))
-
-;; Enable Evil
 (use-package evil
-	     :ensure t
-	     :init
-         (setq evil-want-integration t)
-         (setq evil-want-keybindings nil)
-	     (setq evil-vsplit-window-right t)
-	     (setq evil-split-window-below t)
-	     (setq evil-want-C-i-jump nil)
-	     (setq evil-want-C-u-scroll t)
-         (setq evil-respect-visual-line-mode t)
-         (setq evil-undo-system 'undo-tree)
-	     :config
-	     (evil-mode 1))
-
-;; start menu
-;; dependencies
-(use-package page-break-lines)
-(use-package all-the-icons)
-
-(use-package dashboard
-     :config
-     (setq show-week-agenda-p t)
-     (setq dashboard-items '((recents . 15) (agenda . 5)))
-     (setq dashboard-set-heading-icons t)
-     (setq dashboard-set-file-icons t)
-     (setq dashboard-startup-banner 3)
-     (dashboard-setup-startup-hook))
-
-;; Optimization
-(add-hook 'emacs-startup-hook
-	  (lambda ()
-	    (message "Emacs ready in %s with %d garbage collections."
-		     (format "%.2f seconds"
-			     (float-time
-			      (time-subtract after-init-time before-init-time)))
-		     gcs-done)))
-
-
-;; Org-mode
-(global-font-lock-mode 1)
-
-;; doom-modeline.... 
-(use-package doom-modeline
-             :ensure t
-             :init (doom-modeline-mode 1)
-             :custom ((doom-modeline-height 15)))
-
-
-;;(require 'org)
-(use-package calendar
-  :defer t
-  :custom
-  (calendar-week-start-day 1))
-
-(use-package org
-  :defer t
-  ;; to be sure we have the latest Org version
-  ;; :ensure org-plus-contrib
-  :hook
-  ;;(org-mode . variable-pitch-mode)
-  (org-mode . visual-line-mode)
-  :custom
-  (org-adapt-indentation t)
-  (org-src-tab-acts-natively t))
-
-;; Files
-(setq org-directory "d:/myorg/")
-;;(setq org-agenda-files (list "inbox.org" "agenda.org"))
-(setq org-agenda-files
-      (mapcar 'file-truename
-	      (file-expand-wildcards "d:/myorg/*.org")))
-
-(defun gtd-save-org-buffers()
-  "Save 'org-agenda-files' buffers without user confirmation. See also 'org-save-all-org-buffers'"
-  (interactive)
-  (message "Saving org-agenda-files buffers...")
-  (save-some-buffers t (lambda ()
-			 (when (member (buffer-file-name) org-agenda-files)
-			   t)))
-  (message "Saving org-agenda-files buffers... done"))
-
-(advice-add 'org-refile :after
-	    (lambda (&rest _)
-	      (gtd-save-org-buffers)))
-
-;; Capture
-(setq org-capture-templates
-       `(("i" "Inbox" entry  (file "inbox.org")
-        ,(concat "* TODO %?\n"
-                 "/Entered on/ %U"))
-	 ("m" "Meeting" entry (file+headline "agenda.org" "Future")
-	  ,(concat "* %? :meeting:\n"
-		   "<%<%Y-%m-%d %a %H:00>>"))
-	 ("n" "Note" entry (file "notes.org")
-	  ,(concat "* Note (%a)\n"
-		   "/Entered on/ %U\n" "\n" "%?"))
-	 ))
-
-
-;; settings for caprure
-(defun org-capture-inbox()
-  (interactive)
-  (call-interactively 'org-store-link)
-  (org-capture nil "i"))
-
-;; use full window for capture
-(add-hook 'org-capture-mode-hook 'delete-other-windows)
-
-;; set key command
-(define-key global-map (kbd "C-c c") 'org-capture)
-(define-key global-map (kbd "C-c i") 'org-capture-inbox)
-(define-key global-map (kbd "C-c a") 'org-agenda)
-
-
-;; Refile
-(setq org-refile-use-outline-path 'file)
-(setq org-outline-path-complete-in-steps nil)
-(setq org-refile-targets
-      '(("projects.org" :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")))
-
-
-;; TODO
-(setq org-todo-keywords
-      '((sequence "TODO(t)" "NEXT(n)" "HOLD(h@/!)" "|" "DONE(d)")))
-
-(defun log-todo-next-creation-date (&rest ignore)
-  "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
-  (when (and (string= (org-get-todo-state) "NEXT")
-	     (not (org-entry-get nil "ACTIVATED")))
-    (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
-(add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
-
-;; Agenda
-(setq org-agenda-include-diary t)
-;;(setq org-agenda-custom-commands
-      ;;'(("g" "Get Things Done (GTD)"
-	 ;;((agenda ""
-		  ;;((org-agenda-skip-function
-		    ;;'(org-agenda-skip-entry-if 'deadline))
-		   ;;(org-deadline-warning-days 0)))
-	  ;;(todo "NEXT"
-		;;((org-agenda-skip-function
-		  ;;'(org-agenda-skip-entry-if 'deadline))
-		 ;;(org-agenda-prefix-format "  %i %-12:c [%e] ")
-		 ;;(org-agenda-overriding-header "\nTasks:\n")))
-	  ;;(agenda nil
-		  ;;((org-agenda-entry-types '(:deadline))
-		   ;;(org-agenda-format-date "")
-		   ;;(org-deadline-warning-days 7)
-		   ;;(org-agenda-skip-function
-		    ;;'(org-agenda-skip-entry-if 'notregexp "\\* NEXT"))
-		   ;;(org-agenda-overriding-header "\nDeadlines")))
-	  ;;(tags-todo "inbox"
-		     ;;((org-agenda-prefix-format "  %?-12t% s")
-		      ;;(org-agenda-overriding-header "\nInbox\n")))
-	  ;;(tags "CLOSED>=\"<today>\""
-;;((org-agenda-overriding-header "\nCompleted today\n")))))))
-
-(setq org-agenda-custom-commands
-      '(("d" "Today's Tasks"
-	 ((tags-todo
-	   "Sprint+Active=\"A\""
-	   ((org-agenda-files '("d:/myorg/goals.org"))
-	    (org-agenda-overriding-header "Цели на текущий спринт")))
-	  (agenda "" ((org-agenda-span 1)
-		      (org-agenda-overriding-header "Сегодня")))))
-	("w" "Задачи на неделю"
-	 ((tags-todo "Sprint+Active=\"A\""
-		     ((org-agenda-files '("d:/myorg/goals.org"))
-		      (org-agenda-overriding-header "Цели на текущий спринт")))
-	  (agenda)))))
-			
-(setq org-agenda-hide-tags-regexp ".")
-
-(setq org-agenda-prefix-format
-      `((agenda . " %i %-12:c%?-12t% s")
-	(todo   . " ")
-	(tags   . " %i %-12:c")
-	(search . " %i %-12:c")))
-
-
-(setq org-log-done 'time)
-
-
-;; evil mode for org
-(use-package evil-org
-  :ensure t
-  :after org
-  :hook (org-mode . (lambda () evil-org-mode))
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
   :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-;;(setq org-default-notes-file (concat org-directory "/notes.org"))
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-;;(setq org-todo-keywords
-;;      '(
-;;	(sequence "IDEA(i)" "TODO(t)" "STARTED(s)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")
-;;	(sequence "|" "CANCELED(c)" "DELEGATED(l)" "SOMEDAY(f)")
-;;	))
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
 
-;;(setq org-todo-keywords-faces
-;;      '(("IDEA" . (:foreground "GoldenRod" :weight bold))
-;;	("NEXT" . (:foreground "IndianRed1" :weight bold))
-;;	("STARTED" . (:foreground "OrangeRed" :weight bold))
-;;	("WAITING" . (:foreground "coral" :weight bold))
-;;	("CANCELED" . (:foreground "LimeGreen" :weight bold))
-;;	("DELEGATED" . (:foreground "LimeGreen" :weight bold))
-;;	("SOMEDAY" . (:foreground "LimeGreen" :weight bold))
-;;	))
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
 
-;;(setq org-todo-keywords
-;;      '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-;;	(sequence "|" "WAIT(w)" "BACK(b)")))
+(use-package hydra
+  :defer t)
 
-;;(setq org-todo-keyword-faces
-;;      '(("NEXT" . (foreground "orange red" :weight bold))
-;;	("WAIT" . (foreground "HotPink2" :weight bold))
-;;	("BACK" . (foreground "MediumPurple3" :weight bold))))
-	 
-;; Agenda setup
-(setq org-agenda-window-setup 'current-window)
-;;(setq org-agenda-span 'day)
+(defhydra hydra-text-scale (:timeout 4)
+  "scale text"
+  ("j" text-scale-increase "int")
+  ("k" text-scale-decrease "out")
+  ("f" nil "finished" :exit t))
 
+(efs/leader-keys
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
 
-;;(setq org-fast-tag-selection-single-key t)
-;;(setq org-use-fast-todo-selection t)
+;; ORG-MODE
+(defun efs/org-font-setup ()
+  (font-lock-add-keywords 'org-mode
+			'(("^ *\\([-]\\) "
+			   (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))) 
 
-;;(setq org-reverse-note-order t)
+  
+  (dolist (face '((org-level-1 . 1.0)
+                  (org-level-2 . 1.0)
+                  (org-level-3 . 1.0)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.0)
+                  (org-level-6 . 1.0)
+                  (org-level-7 . 1.0)
+                  (org-level-8 . 1.0)))
+    (set-face-attribute (car face) nil :height (cdr face) :weight 'regular))
 
-;;(setq org-capture-templates
-;;      '(("t" "Todo" entry (file+headline "d:/myorg/notes.org" "Tasks")
-;;	 "* TODO %?\nAdded: %U\n" :prepend t :kill-buffer t)
-;;	("i" "Idea" entry (file+headline "d:/myorg/notes.org" "Someday/Maybe")
-;;	 "* IDEA %?\nAdded: %U\n" :prepend t :kill-buffer t)
-;;	))
-
-;;(setq org-src-fontify-natively t)
-;;(setq org-src-tab-acts-natively t)
-
-
-;; Custom Key Bindings
-(global-set-key (kbd "<f12>") 'org-agenda)
-(global-set-key (kbd "<f11>") 'org-clock-goto)
-
-;; org-bullets
-;;(require 'org-bullets)
-;;(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-(use-package org-bullets
-  :ensure t
-  :custom
-  ;; org-bullets-bullet-list
-  ;; default: "◉ ○ ✸ ✿"
-  ;; large: ♥ ● ◇ ✚ ✜ ☯ ◆ ♠ ♣ ♦ ☢ ❀ ◆ ◖ ▶
-  ;; Small: ► • ★ ▸
-  (org-bullets-bullet-list '("•"))
-  ;; others: ▼, ↴, ⬎, ⤷,…, and ⋱.
-  ;; (org-ellipsis "⤵")
-  (org-ellipsis "…")
-  :hook
-  (org-mode . org-bullets-mode))
-
-(setq org-hide-emphasis-markers t
-      org-fontify-done-headline t
-      org-hide-leading-stars t
-      org-pretty-entities t)
-      
-;; font-size in org mode
-(defun my/org-mode-hook()
-  "Stop the org-level headers from increasing in height relative to the other text."
-  (dolist (face '(org-level-1
-		  org-level-2
-		  org-level-3
-		  org-level-4
-		  org-level-5))
-    (set-face-attribute face nil :weight 'normal :height 1.0))
+    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+;;  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+;;  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+;;  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+;;  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+;;  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+;;  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+;;  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  ;;  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch))
   )
 
-(add-hook 'org-mode-hook #'my/org-mode-hook)
+(defun org-journal-find-location ()
+  (org-journal-new-entry t)
+  (unless (eq org-journal-file-type 'daily)
+    (org-narrow-to-subtree))
+  (goto-char (point-max)))
 
-;; add some modules to org-mode
-(setq org-modules '(org-habit))
-(eval-after-load 'org
-  '(org-load-modules-maybe t))
+(defun efs/org-mode-setup ()
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (visual-line-mode 1))
 
-
-;; habits for org-mode
-(setq org-habit-graph-column 80)
-(setq org-habit-show-habits-only-for-today nil)
-
-;; for cyrillic keyboard
-(use-package unipunct-ng
-  :quelpa
-  (unipunct-ng
-   :fetcher url
-   :url "https://raw.githubusercontent.com/a13/xkb-custom/master/contrib/unipunct-ng.el"))
-
-(use-package reverse-im
-  :ensure t
-  :demand t
-  :after unipunct-ng char-fold
-  :bind
-  ("M-T" . reverse-im-translate-word)
-  :custom
-  (reverse-im-char-fold t)
-  (reverse-im-read-char-advice-function #'reverse-im-read-char-exclude)
-  (reverse-im-input-methods '("russian-unipunct-ng"))
+(use-package org
+  :pin org
+  :commands (org-capture org-agenda)
+  :hook (org-mode . efs/org-mode-setup)
   :config
-  (reverse-im-mode t))
+  (setq org-ellipsis " ▾")
+
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+  (setq org-hide-emphasis-markers t)
+  
+;;  (setq org-agenda-files '("d:/myorg/projects.org"
+;;			   "d:/myorg/agenda.org"))
+  (setq org-directory org-dir)
+  (setq org-agenda-files (list org-dir))
+
+  (require 'org-habit)
+  (add-to-list 'org-modules 'org-habit)
+  (setq org-habit-graph-column 60)
+
+  
+  (setq org-todo-keywords
+	'((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+	  (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+
+  (setq org-refile-targets
+	'(("Archive.org" :maxlevel . 1)))
+  (advice-add 'org-regile :after 'org-save-all-org-buffers)
+  
+  ;; Configure custom agenda views
+  (setq org-agenda-custom-commands
+   '(("d" "Dashboard"
+     ((agenda "" ((org-deadline-warning-days 7)))
+      (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+
+    ("n" "Next Tasks"
+     ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
+
+    ("W" "Work Tasks" tags-todo "+work-email")
+
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+     ((org-agenda-overriding-header "Low Effort Tasks")
+      (org-agenda-max-todos 20)
+      (org-agenda-files org-agenda-files)))
+
+    ("w" "Workflow Status"
+     ((todo "WAIT"
+            ((org-agenda-overriding-header "Waiting on External")
+             (org-agenda-files org-agenda-files)))
+      (todo "REVIEW"
+            ((org-agenda-overriding-header "In Review")
+             (org-agenda-files org-agenda-files)))
+      (todo "PLAN"
+            ((org-agenda-overriding-header "In Planning")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "BACKLOG"
+            ((org-agenda-overriding-header "Project Backlog")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "READY"
+            ((org-agenda-overriding-header "Ready for Work")
+             (org-agenda-files org-agenda-files)))
+      (todo "ACTIVE"
+            ((org-agenda-overriding-header "Active Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "COMPLETED"
+            ((org-agenda-overriding-header "Completed Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "CANC"
+            ((org-agenda-overriding-header "Cancelled Projects")
+             (org-agenda-files org-agenda-files)))))))
+
+  (setq org-capture-templates
+    `(("t" "Tasks / Projects")
+      ("tt" "Task" entry (file+olp ,(concat org-dir "Tasks.org" "Inbox")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1))
+
+      ("j" "Journal Entries")
+      ;;("jj" "Journal" entry
+        ;;   (file+olp+datetree ,(concat org-dir "Journal.org")
+         ;;  "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+         ;;  :clock-in :clock-resume
+      ;;  :empty-lines 1))
+      ("jj" "Journal entry" plain (function org-journal-find-location)
+       "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+       :jump-to-captured t :immediate-finish t)
+      ("jm" "Meeting" entry
+           (file+olp+datetree ,(concat org-dir "Journal.org")
+           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1))
+
+      ("l" "Ledger")
+      ("li" "Income" plain (file ,(concat org-dir "my-finance.ledger"))
+				 "%(org-read-date) * %^{Поступление}
+  Активы:%^{Счет}  %^{Сумма}
+  Прибыль:Зарплата")
+      ("lc" "Cash expenses" plain (file ,(concat org-dir "my-finance.ledger"))
+       "%(org-read-date) * %^{Траты}
+  Расходы:%^{Счет}   %^{Сумма}
+  Активы:%^{Счет}")
+      
+      ("w" "Workflows")
+      ("we" "Checking Email" entry (file+olp+datetree ,(concat org-dir "Journal.org")
+           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1))
+
+      ("m" "Metrics Capture")
+      ("mw" "Weight" table-line (file+headline ,(concat org-dir "Metrics.org" "Weight")
+       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t))))
+
+  (define-key global-map (kbd "C-c j")
+    (lambda () (interactive) (org-capture nil "jj")))
+  
+  (efs/org-font-setup))
+
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+(use-package org-journal
+  :ensure t
+  :defer t
+  :init
+  (setq org-journal-prefix-key "C-c j")
+  :config
+  (setq org-journal-dir (expand-file-name "Journal/" org-dir)
+	org-journal-date-format "%A, %d %B %Y"))
+
+(defun efs/org-mode-visual-fill ()
+  (setq visual-fill-column-width 100
+	visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(use-package visual-fill-column
+  :hook (org-mode . efs/org-mode-visual-fill))
+
+(defun efs/my-ledger-hook ()
+  (lambda ()
+    (setq-local tab-always-indent 'complete)
+    (setq-local completion-cycle-threshold t)
+    (setq-local ledger-complete-in-steps t)))
+
+(use-package ledger-mode
+  :ensure t
+  :init
+  (setq ledger-clear-whole-transaction 1)
+
+  :config
+  (add-to-list 'evil-emacs-state-modes 'ledger-report-mode)
+;;  :hook (
+  :mode "\\.dat\\'"
+        "\\.ledger\\'")
 
 
-;; Store automatic customization options elsewhere
-(setq custom-file (locate-user-emacs-file "custom.el"))
-(when (file-exists-p custom-file)
-  (load custom-file))
+;; my often use files
+(global-set-key (kbd "<f5>") 'lawlist-bookmark)
 
+(defun lawlist-bookmark (choice)
+  "Choices for directories and files."
+  (interactive "c[w]ork.org | [p]ersonal.org | [t]asks.org | [f]inanse.ledger | [d]ocs")
+  (cond
+   ((eq choice ?d)
+    (dired (file-name-as-directory org-dir)))
+   ((eq choice ?w)
+    (find-file (expand-file-name "Work.org" org-dir)))
+   ((eq choice ?p)
+    (find-file (expand-file-name "personal.org" org-dir)))
+   ((eq choice ?t)
+    (find-file (expand-file-name "tasks.org" org-dir)))
+   ((eq choice ?f)
+    (find-file (expand-file-name "my-finance.ledger" org-dir))
+    (message "Opened:  %s" (biffer-name)))
+   (t (message "Quit"))))
+    
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default-input-method "russian-computer")
+ '(global-auto-revert-mode t)
+ '(package-selected-packages
+   '(org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
