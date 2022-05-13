@@ -48,11 +48,15 @@
 
 (setq visible-bell t)
 
+(set-language-environment "Russian")
+(prefer-coding-system 'utf-8)
+
 ;;(set-face-attribute 'default nil :height 110)
 ;;(set-face-attribute 'fixed-pitch nil :height 120)
 ;;(set-face-attribute 'variable-pitch nil :height 130)
 
-(add-to-list 'default-frame-alist '(font . "Fira Code"))
+;;(add-to-list 'default-frame-alist '(font . "Fira Code"))
+(setq default-frame-alist '((font . "Fira Code")))
 (set-face-attribute 'default nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
 (set-face-attribute 'fixed-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
 (set-face-attribute 'variable-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
@@ -60,7 +64,7 @@
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(set-language-environment 'UTF-8)
+;(set-language-environment 'UTF-8)
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 (require 'package)
@@ -172,11 +176,6 @@
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal))
 
-(use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
-
 (use-package hydra
   :defer t)
 
@@ -240,6 +239,9 @@
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
   (setq org-hide-emphasis-markers t)
+  ;;(setq org-agenda-skip-scheduled-if-done t)
+  ;;(setq org-agenda-skip-deadline-if-done t)
+  (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo 'done))
   
 ;;  (setq org-agenda-files '("d:/myorg/projects.org"
 ;;			   "d:/myorg/agenda.org"))
@@ -256,8 +258,11 @@
 	  (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-	'(("Archive.org" :maxlevel . 1)))
-  (advice-add 'org-regile :after 'org-save-all-org-buffers)
+	'(("Archive.org" :maxlevel . 1)
+	  ("Someday.org" :level . 1)
+	  ("Personal.org" :maxlevel . 3)
+	  ("Work.org" :maxlevel . 3)))
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
   
   ;; Configure custom agenda views
   (setq org-agenda-custom-commands
@@ -357,9 +362,16 @@
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
+(use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (evil-collection-init))
+
 (use-package org-journal
   :ensure t
   :defer t
+  :after org
   :init
   (setq org-journal-prefix-key "C-c j")
   :config
@@ -397,7 +409,7 @@
 
 (defun lawlist-bookmark (choice)
   "Choices for directories and files."
-  (interactive "c[w]ork.org | [p]ersonal.org | [t]asks.org | [f]inanse.ledger | [d]ocs")
+  (interactive "c[w]ork.org | [p]ersonal.org | [t]asks.org | [f]inanse.ledger | [i]nbox.org | [d]ocs")
   (cond
    ((eq choice ?d)
     (dired (file-name-as-directory org-dir)))
@@ -408,23 +420,73 @@
    ((eq choice ?t)
     (find-file (expand-file-name "tasks.org" org-dir)))
    ((eq choice ?f)
-    (find-file (expand-file-name "my-finance.ledger" org-dir))
+    (find-file (expand-file-name "my-finance.ledger" org-dir)))
+   ((eq choice ?i)
+    (find-file (expand-file-name "inbox.org" org-dir)))
     (message "Opened:  %s" (biffer-name)))
-   (t (message "Quit"))))
+   (t (message "Quit")))
     
+
+(use-package char-fold
+  :custom
+  (char-fold-symmetric t)
+  (search-default-mode #'char-fold-to-regexp))
+
+(use-package reverse-im
+  :ensure t
+  :custom
+  (reverse-im-input-methods '("russian-computer"))
+  :config
+  (reverse-im-mode t))
+
+(setq-default
+ org-babel-load-languages '((ledger . t)))
+
+;; org-roam
+(use-package org-roam
+  :ensure t
+  :demand t
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory (concat org-dir "RoamNotes/"))
+  (org-roam-completion-everywhere t)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n g" . org-roam-graph)
+	 ("C-c n i" . org-roam-node-insert)
+	 ("C-c n c" . org-roam-capture)
+	 ("C-c n I" . org-roam-node-insert-immediate)
+	 ;; Dailies
+	 ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  (org-roam-db-autosync-mode))
+
+(defun org-roam-node-insert-immediate (arg &rest args)
+  (interactive "P")
+  (let ((args (cons arg args))
+	(org-roam-capture-templates (list (append (car org-roam-capture-templates)
+					  '(:immediate-finish t)))))
+  (apply #'org-roam-node-insert args)))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default-input-method "russian-computer")
+ '(default-input-method "cyrillic-jcuken")
  '(global-auto-revert-mode t)
+ '(ledger-reports
+   '(("bal" "%(binary) -f %(ledger-file) bal")
+     ("reg" "%(binary) -f %(ledger-file) reg")
+     ("payee" "%(binary) -f %(ledger-file) reg @%(payee)")
+     ("account" "%(binary) -f %(ledger-file) reg %(account)")))
  '(package-selected-packages
-   '(org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
+   '(ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(org-block ((t (:inherit fixed-pitch :extend t :background "#373E4C"))))
+ '(variable-pitch ((t (:weight regular :height 110 :foundry "outline" :family "Fira Code")))))
