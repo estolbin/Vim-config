@@ -43,7 +43,7 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 (set-fringe-mode 10)
-
+(show-paren-mode 1)
 (menu-bar-mode -1)
 
 (setq visible-bell t)
@@ -51,11 +51,6 @@
 (set-language-environment "Russian")
 (prefer-coding-system 'utf-8)
 
-;;(set-face-attribute 'default nil :height 110)
-;;(set-face-attribute 'fixed-pitch nil :height 120)
-;;(set-face-attribute 'variable-pitch nil :height 130)
-
-;;(add-to-list 'default-frame-alist '(font . "Fira Code"))
 (setq default-frame-alist '((font . "Fira Code")))
 (set-face-attribute 'default nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
 (set-face-attribute 'fixed-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
@@ -110,7 +105,6 @@
 ;;(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
 
 (use-package all-the-icons)
-
 
 (use-package doom-modeline
   :ensure t
@@ -190,6 +184,7 @@
 
 ;; ORG-MODE
 (defun efs/org-font-setup ()
+  (with-eval-after-load 'org-faces
   (font-lock-add-keywords 'org-mode
 			'(("^ *\\([-]\\) "
 			   (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))) 
@@ -203,10 +198,10 @@
                   (org-level-6 . 1.0)
                   (org-level-7 . 1.0)
                   (org-level-8 . 1.0)))
-    (set-face-attribute (car face) nil :height (cdr face) :weight 'regular))
+    (set-face-attribute (car face) nil :height (cdr face) :weight 'regular))))
 
     ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+;;  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
 ;;  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
 ;;  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
 ;;  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
@@ -215,7 +210,7 @@
 ;;  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
 ;;  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
   ;;  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch))
-  )
+  
 
 (defun org-journal-find-location ()
   (org-journal-new-entry t)
@@ -234,34 +229,47 @@
   :hook (org-mode . efs/org-mode-setup)
   :config
   (setq org-ellipsis " ▾")
-
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
   (setq org-hide-emphasis-markers t)
-  ;;(setq org-agenda-skip-scheduled-if-done t)
-  ;;(setq org-agenda-skip-deadline-if-done t)
   (setq org-agenda-skip-function-global '(org-agenda-skip-entry-if 'todo 'done))
-  
-;;  (setq org-agenda-files '("d:/myorg/projects.org"
-;;			   "d:/myorg/agenda.org"))
   (setq org-directory org-dir)
   (setq org-agenda-files (list org-dir))
 
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
   (setq org-habit-graph-column 60)
-
+  (setq org-tag-alist
+	'((:startgroup .nil)
+	  ("Дом" . ?h) ("Офис" . ?w) ("Улица" . ?s) ("Магазин" . ?b)
+	  (:endgroup .nil)
+	  (:startgroup .nil)
+	  ("Звонок" . ?c) ("Встреча" . ?m) ("Купить" . ?b) 
+	  (:endgroup .nil)))
   
   (setq org-todo-keywords
 	'((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-	  (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+	  (sequence "PROJ(p)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-  (setq org-refile-targets
-	'(("Archive.org" :maxlevel . 1)
-	  ("Someday.org" :level . 1)
-	  ("Personal.org" :maxlevel . 3)
-	  ("Work.org" :maxlevel . 3)))
+  (setq org-todo-keyword-faces
+	'(quote (("TODO" :foreground "tomato")
+		("PROJ" :foreground "light state gray")
+		("NEXT" :foreground "tomato")
+		("WAIT" :foregorund "orange")
+		("HOLD" :foreground "turquoise"))))
+  
+  
+;;  (setq org-refile-targets
+;;	'(("Archive.org" :maxlevel . 1)
+;;	  ("Someday.org" :level . 1)
+;;	  ("Tasks.org" :maxlevel . 3)
+;;	  ("Personal.org" :maxlevel . 3)
+;;	  ("Work.org" :maxlevel . 3)))
+  (setq org-refile-targets '((nil :maxlevel . 3)
+			     (org-agenda-files :maxlevel . 3)))
+  (setq org-outline-path-comlete-in-steps nil)
+  (setq org-refile-use-outline-path t)
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
   
   ;; Configure custom agenda views
@@ -314,8 +322,8 @@
 
   (setq org-capture-templates
     `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp ,(concat org-dir "Tasks.org" "Inbox")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1))
+      ("tt" "Task" entry (file+olp ,(concat org-dir "inbox.org") "Inbox")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
       ("j" "Journal Entries")
       ;;("jj" "Journal" entry
@@ -328,33 +336,31 @@
        "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
        :jump-to-captured t :immediate-finish t)
       ("jm" "Meeting" entry
-           (file+olp+datetree ,(concat org-dir "Journal.org")
+           (file+olp+datetree ,(concat org-dir "Journal.org"))
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
-           :empty-lines 1))
+           :empty-lines 1)
 
       ("l" "Ledger")
       ("li" "Income" plain (file ,(concat org-dir "my-finance.ledger"))
 				 "%(org-read-date) * %^{Поступление}
-  Активы:%^{Счет}  %^{Сумма}
-  Прибыль:Зарплата")
+                                      Активы:%^{Счет}  %^{Сумма}
+                                      Прибыль:Зарплата")
       ("lc" "Cash expenses" plain (file ,(concat org-dir "my-finance.ledger"))
        "%(org-read-date) * %^{Траты}
-  Расходы:%^{Счет}   %^{Сумма}
-  Активы:%^{Счет}")
+           Расходы:%^{Счет}   %^{Сумма}
+           Активы:%^{Счет}")
       
-      ("w" "Workflows")
-      ("we" "Checking Email" entry (file+olp+datetree ,(concat org-dir "Journal.org")
-           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1))
-
       ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline ,(concat org-dir "Metrics.org" "Weight")
-       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t))))
+      ("mw" "Вес" table-line (file+olp ,(concat org-dir "Metrics.org") "Weight")
+					       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
+      ("mr" "Зарядка" table-line (file+headline ,(concat org-dir "Metrics.org") "Зарядка")
+						"| %U | %^{Отжимания} | %^{Приседания} | %^{Подтягивания} | %^{Скручивания} | %^{Обратные скручивания} |" :kill-buffer t))))
 
-  (define-key global-map (kbd "C-c j")
-    (lambda () (interactive) (org-capture nil "jj")))
+(define-key global-map (kbd "C-c j")
+  (lambda () (interactive) (org-capture nil "jj")))
   
-  (efs/org-font-setup))
+(efs/org-font-setup)
 
 (use-package org-bullets
   :after org
@@ -422,8 +428,8 @@
    ((eq choice ?f)
     (find-file (expand-file-name "my-finance.ledger" org-dir)))
    ((eq choice ?i)
-    (find-file (expand-file-name "inbox.org" org-dir)))
-    (message "Opened:  %s" (biffer-name)))
+    (find-file (expand-file-name "inbox.org" org-dir))))
+    (message "Opened:  %s" (buffer-name))
    (t (message "Quit")))
     
 
@@ -440,7 +446,8 @@
   (reverse-im-mode t))
 
 (setq-default
- org-babel-load-languages '((ledger . t)))
+ org-babel-load-languages '((ledger . t)
+			    (emacs-lisp . t)))
 
 ;; org-roam
 (use-package org-roam
@@ -474,7 +481,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default-input-method "cyrillic-jcuken")
  '(global-auto-revert-mode t)
  '(ledger-reports
    '(("bal" "%(binary) -f %(ledger-file) bal")
