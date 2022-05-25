@@ -6,6 +6,10 @@
 (setq auto-revert-verbose nil)
 (setq global-auto-revert-mode t)
 
+(setq nov-unzip-program (executable-find "unzip"))
+(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+
+
 ;; run server if not running
 (cond ((eq system-type 'windows-nt)
         (require 'server)
@@ -181,6 +185,9 @@
 
 (efs/leader-keys
   "ts" '(hydra-text-scale/body :which-key "scale text"))
+
+;; start week on monday
+(setq calendar-week-start-day 1)
 
 ;; ORG-MODE
 (defun efs/org-font-setup ()
@@ -449,6 +456,15 @@
  org-babel-load-languages '((ledger . t)
 			    (emacs-lisp . t)))
 
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install))
+
+;;(use-package org-pdfview
+;;  :ensure t)
+  
+
 ;; org-roam
 (use-package org-roam
   :ensure t
@@ -488,7 +504,7 @@
      ("payee" "%(binary) -f %(ledger-file) reg @%(payee)")
      ("account" "%(binary) -f %(ledger-file) reg %(account)")))
  '(package-selected-packages
-   '(ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
+   '(org-pdfview nov ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
