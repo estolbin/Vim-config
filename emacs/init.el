@@ -68,7 +68,8 @@
 
 (require 'package)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+;;("melpa" . "https://melpa.org/packages/")
+(setq package-archives '(("melpa" . "http://www.mirrorservice.org/sites/melpa.org/packages/")
 			 ("org" . "https://orgmode.org/elpa/")
 			 ("elpa" . "https://elpa.gnu.org/packages/")))
 
@@ -266,13 +267,6 @@
 		("WAIT" :foregorund "orange")
 		("HOLD" :foreground "turquoise"))))
   
-  
-;;  (setq org-refile-targets
-;;	'(("Archive.org" :maxlevel . 1)
-;;	  ("Someday.org" :level . 1)
-;;	  ("Tasks.org" :maxlevel . 3)
-;;	  ("Personal.org" :maxlevel . 3)
-;;	  ("Work.org" :maxlevel . 3)))
   (setq org-refile-targets '((nil :maxlevel . 3)
 			     (org-agenda-files :maxlevel . 3)))
   (setq org-outline-path-comlete-in-steps nil)
@@ -283,12 +277,12 @@
   (setq org-agenda-custom-commands
    '(("d" "Dashboard"
      ((agenda "" ((org-deadline-warning-days 7)))
-      (todo "NEXT"
+      (todo "TODO"
         ((org-agenda-overriding-header "Next Tasks")))
       (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
     ("n" "Next Tasks"
-     ((todo "NEXT"
+     ((todo "TODO"
         ((org-agenda-overriding-header "Next Tasks")))))
 
     ("W" "Work Tasks" tags-todo "+work-email")
@@ -297,35 +291,7 @@
     ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
      ((org-agenda-overriding-header "Low Effort Tasks")
       (org-agenda-max-todos 20)
-      (org-agenda-files org-agenda-files)))
-
-    ("w" "Workflow Status"
-     ((todo "WAIT"
-            ((org-agenda-overriding-header "Waiting on External")
-             (org-agenda-files org-agenda-files)))
-      (todo "REVIEW"
-            ((org-agenda-overriding-header "In Review")
-             (org-agenda-files org-agenda-files)))
-      (todo "PLAN"
-            ((org-agenda-overriding-header "In Planning")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "BACKLOG"
-            ((org-agenda-overriding-header "Project Backlog")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "READY"
-            ((org-agenda-overriding-header "Ready for Work")
-             (org-agenda-files org-agenda-files)))
-      (todo "ACTIVE"
-            ((org-agenda-overriding-header "Active Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "COMPLETED"
-            ((org-agenda-overriding-header "Completed Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "CANC"
-            ((org-agenda-overriding-header "Cancelled Projects")
-             (org-agenda-files org-agenda-files)))))))
+      (org-agenda-files org-agenda-files)))))
 
   (setq org-capture-templates
     `(("t" "Tasks / Projects")
@@ -333,12 +299,6 @@
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
       ("j" "Journal Entries")
-      ;;("jj" "Journal" entry
-        ;;   (file+olp+datetree ,(concat org-dir "Journal.org")
-         ;;  "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-           ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-         ;;  :clock-in :clock-resume
-      ;;  :empty-lines 1))
       ("jj" "Journal entry" plain (function org-journal-find-location)
        "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
        :jump-to-captured t :immediate-finish t)
@@ -439,7 +399,6 @@
     (message "Opened:  %s" (buffer-name))
    (t (message "Quit")))
     
-
 (use-package char-fold
   :custom
   (char-fold-symmetric t)
@@ -460,10 +419,6 @@
   :ensure t
   :config
   (pdf-tools-install))
-
-;;(use-package org-pdfview
-;;  :ensure t)
-  
 
 ;; org-roam
 (use-package org-roam
@@ -492,6 +447,30 @@
 					  '(:immediate-finish t)))))
   (apply #'org-roam-node-insert args)))
 
+(use-package org-noter
+  :after pdf-tools 
+  :ensure t
+  :config
+  (setq org-noter-notes-search-path (list (concat org-dir "Noter/"))
+	org-noter-default-notes-file-name '("notes.org")))
+
+
+(use-package org-ac
+  :ensure t
+  :init (progn
+	  (require 'org-ac)
+	  (org-ac/config-default)))
+
+
+;; auto-complete
+(use-package auto-complete
+  :ensure t
+  :init
+  (progn
+    (ac-config-default)
+    (global-auto-complete-mode t)))
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -503,8 +482,10 @@
      ("reg" "%(binary) -f %(ledger-file) reg")
      ("payee" "%(binary) -f %(ledger-file) reg @%(payee)")
      ("account" "%(binary) -f %(ledger-file) reg %(account)")))
+ '(org-agenda-files
+   '("~/Dropbox/org/Someday.org" "c:/Users/stolbin.es/Dropbox/org/Metrics.org" "c:/Users/stolbin.es/Dropbox/org/Tasks.org" "c:/Users/stolbin.es/Dropbox/org/finance.org" "c:/Users/stolbin.es/Dropbox/org/inbox.org" "c:/Users/stolbin.es/Dropbox/org/personal.org" "c:/Users/stolbin.es/Dropbox/org/work.org"))
  '(package-selected-packages
-   '(org-pdfview nov ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
+   '(auto-complete org-pdfview nov ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
