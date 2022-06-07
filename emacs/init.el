@@ -1,6 +1,7 @@
 (defvar efs/default-font-size 110)
 
-(defvar org-dir "~/Dropbox/org/")
+;;(defvar org-dir "~/Dropbox/org/")
+(load (expand-file-name "org-dir.el" user-emacs-directory))
 
 (setq inhibit-startup-message t)
 (setq auto-revert-verbose nil)
@@ -341,6 +342,14 @@
   :config
   (evil-collection-init))
 
+(use-package evil-org
+  :ensure t
+  :after org
+  :hook (org-mode . (lambda () evil-org-mode))
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
 (use-package org-journal
   :ensure t
   :defer t
@@ -428,6 +437,7 @@
   (setq org-roam-v2-ack t)
   :custom
   (org-roam-directory (concat org-dir "RoamNotes/"))
+  (org-roam-db-location (expand-file-name "org-roam.db" org-roam-directory))
   (org-roam-completion-everywhere t)
   :bind (("C-c n l" . org-roam-buffer-toggle)
 	 ("C-c n f" . org-roam-node-find)
@@ -485,7 +495,7 @@
  '(org-agenda-files
    '("~/Dropbox/org/Someday.org" "c:/Users/stolbin.es/Dropbox/org/Metrics.org" "c:/Users/stolbin.es/Dropbox/org/Tasks.org" "c:/Users/stolbin.es/Dropbox/org/finance.org" "c:/Users/stolbin.es/Dropbox/org/inbox.org" "c:/Users/stolbin.es/Dropbox/org/personal.org" "c:/Users/stolbin.es/Dropbox/org/work.org"))
  '(package-selected-packages
-   '(auto-complete org-pdfview nov ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
+   '(evil-org djvu auto-complete org-pdfview nov ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
