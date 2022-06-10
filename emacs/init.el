@@ -1,15 +1,161 @@
-(defvar efs/default-font-size 110)
+(defvar my/init-start-time (current-time) "Time when init.el was started")
+(defvar my/section-start-time (current-time) "Time when section was started")
+
+(setq debug-on-error t)
+
+
+(setq visible-bell t)
+(setq straight-check-for-modifications nil)
+
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+
+(setq bmw/face-height-default
+      (if (eq system-type 'darwin)
+          180
+        110))
+
+(set-face-attribute 'default t
+                    :background "#000000"
+                    :foreground "#ffffff"
+                    :family "Fira Code"
+                    :height bmw/face-height-default)
+
+(setq nano-font-family-monospaced "Fira Code")
+(setq nano-font-size (/ bmw/face-height-default 10))
+
+(straight-use-package 'use-package)
+
+(use-package straight
+  :custom
+  (straight-use-package-by-default t))
+
+(straight-use-package
+ '(pdf-tools :type git :host github :repo "vedang/pdf-tools"))
+
+;; NANO splash
+(straight-use-package
+ '(nano-splash :type git :host github :repo "rougier/nano-splash"))
+
+;; NANO theme
+(straight-use-package
+ '(nano-theme :type git :host github :repo "rougier/nano-theme"))
+
+;; NANO modeline
+(straight-use-package
+ '(nano-modeline :type git :host github :repo "rougier/nano-modeline"))
+
+;; NANO agenda
+(straight-use-package
+ '(nano-agenda :type git :host github :repo "rougier/nano-agenda"))
+
+;; SVG tags, progress bars & icons
+(straight-use-package
+ '(svg-lib :type git :host github :repo "rougier/svg-lib"))
+
+;; Replace keywords with SVG tags
+(straight-use-package
+ '(svg-tag-mode :type git :host github :repo "rougier/svg-tag-mode"))
+
+;;(defvar efs/default-font-size 110)
 
 ;;(defvar org-dir "~/Dropbox/org/")
 (load (expand-file-name "org-dir.el" user-emacs-directory))
 
-(setq inhibit-startup-message t)
-(setq auto-revert-verbose nil)
-(setq global-auto-revert-mode t)
+(setq-default
+ inhibit-startup-screen t               ; Disable start-up screen
+ inhibit-startup-message t              ; Disable startup message
+ inhibit-startup-echo-area-message t    ; Disable initial echo message
+ initial-scratch-message ""             ; Empty the initial *scratch* buffer
+ initial-buffer-choice t)               ; Open *scratch* buffer at init
+
+
+(set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
+(prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
+(set-default-coding-systems 'utf-8)     ; Set default value of various coding systems
+(set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
+(set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
+(set-language-environment "Russian")    ; Set up multilingual environment
+
+;;(setq inhibit-startup-message t)
+;;(setq auto-revert-verbose nil)
+;;(setq global-auto-revert-mode t)
+
+(setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
+      (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
+      auto-save-default t        ; Auto-save every buffer that visits a file
+      auto-save-timeout 20       ; Number of seconds between auto-save
+      auto-save-interval 200)    ; Number of keystrokes between auto-saves
+
+(setq backup-directory-alist       ; File name patterns and backup directory names.
+      `(("." . ,(expand-file-name "backups" user-emacs-directory)))
+      make-backup-files t          ; Backup of a file the first time it is saved.
+      vc-make-backup-files nil     ; No backup of files under version contr
+      backup-by-copying t          ; Don't clobber symlinks
+      version-control t            ; Version numbers for backup files
+      delete-old-versions t        ; Delete excess backup files silently
+      kept-old-versions 6          ; Number of old versions to keep
+      kept-new-versions 9          ; Number of new versions to keep
+      delete-by-moving-to-trash t) ; Delete files to trash
+
+(setq bookmark-default-file (expand-file-name "bookmark" user-emacs-directory))
+
+(defun unpropertize-kill-ring ()
+  (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
+
+(add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
 
 (setq nov-unzip-program (executable-find "unzip"))
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
+(require 'savehist)
+
+(setq kill-ring-max 50
+      history-length 50)
+
+(setq savehist-additional-variables
+      '(kill-ring
+        command-history
+        set-variable-value-history
+        custom-variable-history   
+        query-replace-history     
+        read-expression-history   
+        minibuffer-history        
+        read-char-history         
+        face-name-history         
+        bookmark-history
+        file-name-history))
+
+ (put 'minibuffer-history         'history-length 50)
+ (put 'file-name-history          'history-length 50)
+ (put 'set-variable-value-history 'history-length 25)
+ (put 'custom-variable-history    'history-length 25)
+ (put 'query-replace-history      'history-length 25)
+ (put 'read-expression-history    'history-length 25)
+ (put 'read-char-history          'history-length 25)
+ (put 'face-name-history          'history-length 25)
+ (put 'bookmark-history           'history-length 25)
+
+(setq history-delete-duplicates t)
+
+(let (message-log-max)
+  (savehist-mode))
+
+(setq save-place-file (expand-file-name "saveplace" user-emacs-directory)
+      save-place-forget-unreadable-files t)
+
+(save-place-mode 1)
 
 ;; run server if not running
 (cond ((eq system-type 'windows-nt)
@@ -17,49 +163,39 @@
         (unless (server-running-p)
           (server-start))))
 
-(defvar emacs-autosave-directory
-  (concat user-emacs-directory "autosaves/"))
+(message "Core section time: %.2fs"
+         (float-time (time-subtract (current-time) my/section-start-time)))
 
-(setq backup-directory-alist
-      `((".*" . ,emacs-autosave-directory))
-      auto-save-file-name-transforms
-      `((".*" ,emacs-autosave-directory t)))
+(setq my/session-start-time (current-time))
+
+;;(defvar emacs-autosave-directory
+;;  (concat user-emacs-directory "autosaves/"))
+
+;;(setq backup-directory-alist
+;;      `((".*" . ,emacs-autosave-directory))
+;;      auto-save-file-name-transforms
+;;      `((".*" ,emacs-autosave-directory t)))
 
 (setq undo-tree-history-directory-alist '((".*" . "~/.emacs.d/undo/")))
-;;(setq
-;; backup-by-copying t
-;; backup-directory-alist '(("." . "~/.emacs.d/saves/"))
-;; delete-old-versions t
-;; kept-new-versions 6
-;; kept-old-versions 2
-;; version-control t)
 
-(setq gc-cons-threshold (* 50 1000 1000))
+;;(setq gc-cons-threshold (* 50 1000 1000))
 
-(defun efs/display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-	   (format "%.2f seconds"
-		   (float-time
-		    (time-subtract after-init-time before-init-time)))
-	   gcs-done))
-(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+;;(defun efs/display-startup-time ()
+;;  (message "Emacs loaded in %s with %d garbage collections."
+;;	   (format "%.2f seconds"
+;;		   (float-time
+;;		    (time-subtract after-init-time before-init-time)))
+;;	   gcs-done))
+;;(add-hook 'emacs-startup-hook #'efs/display-startup-time)
 
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
-(set-fringe-mode 10)
-(show-paren-mode 1)
-(menu-bar-mode -1)
 
-(setq visible-bell t)
+;;(set-language-environment "Russian")
+;;(prefer-coding-system 'utf-8)
 
-(set-language-environment "Russian")
-(prefer-coding-system 'utf-8)
-
-(setq default-frame-alist '((font . "Fira Code")))
-(set-face-attribute 'default nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
-(set-face-attribute 'fixed-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
-(set-face-attribute 'variable-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
+;;(setq default-frame-alist '((font . "Fira Code")))
+;;(set-face-attribute 'default nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
+;;(set-face-attribute 'fixed-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
+;;(set-face-attribute 'variable-pitch nil :font "Fira Code" :height efs/default-font-size :weight 'regular)
 
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -67,22 +203,22 @@
 ;(set-language-environment 'UTF-8)
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-(require 'package)
+;;(require 'package)
 
 ;;("melpa" . "https://melpa.org/packages/")
-(setq package-archives '(("melpa" . "http://www.mirrorservice.org/sites/melpa.org/packages/")
-			 ("org" . "https://orgmode.org/elpa/")
-			 ("elpa" . "https://elpa.gnu.org/packages/")))
+;;(setq package-archives '(("melpa" . "http://www.mirrorservice.org/sites/melpa.org/packages/")
+;;			 ("org" . "https://orgmode.org/elpa/")
+;;			 ("elpa" . "https://elpa.gnu.org/packages/")))
 
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+;;(package-initialize)
+;;(unless package-archive-contents
+;;  (package-refresh-contents))
 
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
+;;(unless (package-installed-p 'use-package)
+;;  (package-install 'use-package))
 
-(require 'use-package)
-(setq use-package-always-ensure t)
+;;(require 'use-package)
+;;(setq use-package-always-ensure t)
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
@@ -112,13 +248,42 @@
 
 (use-package all-the-icons)
 
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+(straight-use-package
+ '(nano-emacs :type git :host github :repo "rougier/nano-emacs"))
+(require 'nano-layout)
 
-(use-package doom-themes
-  :init (load-theme 'doom-nord t))
+(require 'nano-faces)
+(nano-faces)
+
+;;(setq nano-font-family-monospaced "Fira Code")
+;;(setq nano-font-family-proportional nil)
+;;(setq nano-font-size 11)
+(require 'nano-theme)
+(nano-theme)
+
+(require 'nano-defaults)
+(require 'nano-session)
+(require 'nano-modeline)
+
+(provide 'nano)
+
+(let ((inhibit-message t))
+  (message "Welcome to GNU Emacs / N Λ N O edition")
+  (message (format "Initialization time: %s" (emacs-init-time))))
+
+(require 'nano-splash)
+
+(require 'nano-help)
+
+(provide 'nano)
+
+;;(use-package doom-modeline
+;;  :ensure t
+;;  :init (doom-modeline-mode 1)
+;;  :custom ((doom-modeline-height 15)))
+;;
+;;(use-package doom-themes
+;;  :init (load-theme 'doom-nord t))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -162,19 +327,15 @@
 (use-package evil
   :init
   (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
+   (setq evil-want-keybinding nil)
+   (setq evil-want-C-u-scroll t)
   (setq evil-want-C-i-jump nil)
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
 
 (use-package hydra
   :defer t)
@@ -233,7 +394,6 @@
   (visual-line-mode 1))
 
 (use-package org
-  :pin org
   :commands (org-capture org-agenda)
   :hook (org-mode . efs/org-mode-setup)
   :config
@@ -396,17 +556,21 @@
    ((eq choice ?d)
     (dired (file-name-as-directory org-dir)))
    ((eq choice ?w)
-    (find-file (expand-file-name "Work.org" org-dir)))
+    (find-file (expand-file-name "Work.org" org-dir))
+    (message "Opened:  %s" (buffer-name)))
    ((eq choice ?p)
-    (find-file (expand-file-name "personal.org" org-dir)))
+    (find-file (expand-file-name "personal.org" org-dir))
+    (message "Opened:  %s" (buffer-name)))
    ((eq choice ?t)
-    (find-file (expand-file-name "tasks.org" org-dir)))
+    (find-file (expand-file-name "tasks.org" org-dir))
+    (message "Opened:  %s" (buffer-name)))
    ((eq choice ?f)
-    (find-file (expand-file-name "my-finance.ledger" org-dir)))
+    (find-file (expand-file-name "my-finance.ledger" org-dir))
+    (message "Opened:  %s" (buffer-name)))
    ((eq choice ?i)
-    (find-file (expand-file-name "inbox.org" org-dir))))
-    (message "Opened:  %s" (buffer-name))
-   (t (message "Quit")))
+    (find-file (expand-file-name "inbox.org" org-dir))
+    (message "Opened:  %s" (buffer-name)))
+   (t (message "Quit"))))
     
 (use-package char-fold
   :custom
@@ -424,10 +588,10 @@
  org-babel-load-languages '((ledger . t)
 			    (emacs-lisp . t)))
 
-(use-package pdf-tools
-  :ensure t
-  :config
-  (pdf-tools-install))
+;;(use-package pdf-tools
+;;  :ensure t
+;;  :config
+;;  (pdf-tools-install))
 
 ;; org-roam
 (use-package org-roam
@@ -446,9 +610,18 @@
 	 ("C-c n c" . org-roam-capture)
 	 ("C-c n I" . org-roam-node-insert-immediate)
 	 ;; Dailies
-	 ("C-c n j" . org-roam-dailies-capture-today))
-  :config
-  (org-roam-db-autosync-mode))
+	 ("C-c n j" . org-roam-dailies-capture-today)))
+
+(use-package org-roam-ui
+  :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+    ;; :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 (defun org-roam-node-insert-immediate (arg &rest args)
   (interactive "P")
@@ -464,13 +637,9 @@
   (setq org-noter-notes-search-path (list (concat org-dir "Noter/"))
 	org-noter-default-notes-file-name '("notes.org")))
 
-
 (use-package org-ac
-  :ensure t
-  :init (progn
-	  (require 'org-ac)
-	  (org-ac/config-default)))
-
+  :config
+  (org-ac/config-default))
 
 ;; auto-complete
 (use-package auto-complete
@@ -480,7 +649,106 @@
     (ac-config-default)
     (global-auto-complete-mode t)))
 
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                5000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
 
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t
+  :custom
+  (treemacs-no-png-images t))
+
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(set-fringe-mode 10)
+(show-paren-mode 1)
+(menu-bar-mode -1)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -496,10 +764,3 @@
    '("~/Dropbox/org/Someday.org" "c:/Users/stolbin.es/Dropbox/org/Metrics.org" "c:/Users/stolbin.es/Dropbox/org/Tasks.org" "c:/Users/stolbin.es/Dropbox/org/finance.org" "c:/Users/stolbin.es/Dropbox/org/inbox.org" "c:/Users/stolbin.es/Dropbox/org/personal.org" "c:/Users/stolbin.es/Dropbox/org/work.org"))
  '(package-selected-packages
    '(evil-org djvu auto-complete org-pdfview nov ledger-mode org-roam reverse-im org-journal visual-fill-column org-bullets which-key use-package rainbow-delimiters ivy-rich hydra general evil-collection doom-themes doom-modeline counsel)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-block ((t (:inherit fixed-pitch :extend t :background "#373E4C"))))
- '(variable-pitch ((t (:weight regular :height 110 :foundry "outline" :family "Fira Code")))))
