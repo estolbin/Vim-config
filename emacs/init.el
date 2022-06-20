@@ -611,7 +611,7 @@
 
 (use-package org-gtd
   :straight
-  (org-gtd type: git :host github :repo "trevole/org-gtd.el")
+  (org-gtd type: git :host github :repo "trevoke/org-gtd.el")
   :after org
   :demand t
   :custom
