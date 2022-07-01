@@ -70,7 +70,10 @@
 ;;(defvar efs/default-font-size 110)
 
 ;;(defvar org-dir "~/Dropbox/org/")
-(load (expand-file-name "org-dir.el" user-emacs-directory))
+;;(load (expand-file-name "org-dir.el" user-emacs-directory))
+(let ((org-dir-file (expand-file-name "org-dir.el" user-emacs-directory)))
+  (when (file-exists-p org-dir-file)
+    (load-file org-dir-file)))
 
 (setq-default
  inhibit-startup-screen t               ; Disable start-up screen
@@ -316,6 +319,7 @@
 (use-package general
   :after evil
   :config
+  (general-evil-setup)
   (general-create-definer efs/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
@@ -414,7 +418,20 @@
   (add-to-list 'org-modules 'org-habit)
   (setq org-habit-graph-column 60)
   (setq org-tag-alist
-	'(("@Дом" . ?h) ("@Офис" . ?w) ("Улица" . ?s) ("@Магазин" . ?b)))
+	    '((:startgroup)
+          ("@дом" . ?h)
+          ("@офис" . ?w)
+          ("@везде" . ?a)
+          (:endgroup)
+          (:startgroup)
+          ("@звонок" . ?c)
+          ("@встреча" . ?m)
+          ("@купить" . ?b)
+          (:endgroup)
+          (:startgroup)
+          ("Дениска" . ?D)
+          ("Наташка" . ?N)
+          (:endgroup)))
   
   (setq org-todo-keywords
 	'((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -448,11 +465,6 @@
       ("jj" "Journal entry" plain (function org-journal-find-location)
        "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
        :jump-to-captured t :immediate-finish t)
-      ("jm" "Meeting" entry
-           (file+olp+datetree ,(concat org-dir "Journal.org"))
-           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-           :clock-in :clock-resume
-           :empty-lines 1)
 
       ("l" "Ledger")
       ("li" "Income" plain (file ,(concat org-dir "my-finance.ledger"))
@@ -467,7 +479,7 @@
       ("m" "Metrics Capture")
       ("mw" "Вес" table-line (file+olp ,(concat org-dir "Metrics.org") "Weight")
 					       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
-      ("mr" "Зарядка" table-line (file+headline ,(concat org-dir "Metrics.org") "Зарядка")
+      ("mr" "Зарядка" table-line (file+olp ,(concat org-dir "Metrics.org") "Зарядка")
 						"| %U | %^{Отжимания} | %^{Приседания} | %^{Подтягивания} | %^{Скручивания} | %^{Обратные скручивания} |" :kill-buffer t))))
 
 (define-key global-map (kbd "C-c j")
@@ -485,7 +497,15 @@
   :after evil
   :ensure t
   :config
-  (evil-collection-init))
+  (evil-collection-init
+   '(calendar
+     dired
+     ivy
+     ibuffer
+     pdf
+     info
+     flycheck
+     bookmark)))
 
 (use-package evil-org
   :ensure t
@@ -502,6 +522,7 @@
   :init
   (setq org-journal-prefix-key "C-c j")
   :config
+  (setq org-journal-file-type 'monthly)
   (setq org-journal-dir (expand-file-name "Journal/" org-dir)
 	org-journal-date-format "%A, %d %B %Y"))
 
@@ -564,7 +585,13 @@
 
 (use-package reverse-im
   :ensure t
+  :demand t
+  :after char-fold
+  :bind
+  ("M-T" . reverse-im-translate-word)
   :custom
+  (reverse-im-char-fold t)
+  (reverse-im-read-char-advice-function #'reverse-im-read-char-exclude)
   (reverse-im-input-methods '("russian-computer"))
   :config
   (reverse-im-mode t))
