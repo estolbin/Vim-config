@@ -28,10 +28,14 @@
 (set-face-attribute 'default t
                     ;:background "#000000"
                     ;:foreground "#ffffff"
-                    :family "Fira Code"
+                    ;:family "Fira Code"
+                    :family "DejaVu Sans Mono"
+                    ;:family "Roboto Mono"
                     :height bmw/face-height-default)
 
-(setq nano-font-family-monospaced "Fira Code")
+;;(setq nano-font-family-monospaced "Fira Code")
+(setq nano-font-family-monospaced "DejaVu Sans Mono")
+;(setq nano-font-family-monospaced "Roboto Mono")
 (setq nano-font-size (/ bmw/face-height-default 10))
 
 (straight-use-package 'use-package)
@@ -616,6 +620,11 @@
   (org-roam-directory (concat org-dir "RoamNotes/"))
   (org-roam-db-location (expand-file-name "org-roam.db" org-roam-directory))
   (org-roam-completion-everywhere t)
+  :config
+  (setq org-roam-mode-sections
+        (list #'org-roam-backlinks-insert-section
+              #'org-roam-reflinks-insert-section))
+  (org-roam-setup)
   :bind (("C-c n l" . org-roam-buffer-toggle)
 	 ("C-c n f" . org-roam-node-find)
 	 ("C-c n g" . org-roam-graph)
@@ -624,6 +633,15 @@
 	 ("C-c n I" . org-roam-node-insert-immediate)
 	 ;; Dailies
 	 ("C-c n j" . org-roam-dailies-capture-today)))
+
+(add-to-list 'display-buffer-alist
+             '("\\*org-roam\\*"
+               (display-buffer-in-side-window)
+               (side . right)
+               (slot . 0)
+               (window-width . 0.33)
+               (window-parameters . ((no-other-window t)
+                                     (no-delete-other-window . t)))))
 
 (use-package org-roam-ui
   :straight
@@ -695,7 +713,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("b0b6bc4aef5dafbb4d191513645557dc8c79e20ffe0b6e4a5ca1ea3214b28bd2" default))
+   '("5011dba8f3d9f310de6034905f2d47928473f8769fa8a37edc0ab5469fbb05f2" "b0b6bc4aef5dafbb4d191513645557dc8c79e20ffe0b6e4a5ca1ea3214b28bd2" default))
  '(global-auto-revert-mode t)
  '(ledger-reports
    '(("bal" "%(binary) -f %(ledger-file) bal")
