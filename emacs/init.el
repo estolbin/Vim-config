@@ -702,6 +702,38 @@
 					  '(:immediate-finish t)))))
   (apply #'org-roam-node-insert args)))
 
+(use-package org-noter-pdftools
+  :after org-noter
+  :config
+  ;; Add a function to ensure precise note is inserted
+  (defun org-noter-pdftools-insert-precise-note (&optional toggle-no-questions)
+    (interactive "P")
+    (org-noter--with-valid-session
+     (let ((org-noter-insert-note-no-questions (if toggle-no-questions
+                                                   (not org-noter-insert-note-no-questions)
+                                                 org-noter-insert-note-no-questions))
+           (org-pdftools-use-isearch-link t)
+           (org-pdftools-use-freestyle-annot 'org-pdftools-use-freepointer-annot))
+       (org-noter-insert-note (org-noter--get-precise-info)))))
+
+  ;; fix https://github.com/weirdNox/org-noter/pull/93/commits/f8349ae7575e599f375de1be6be2d0d5de4e6cbf
+  (defun org-noter-set-start-location (&optional arg)
+    "When opening a session with this document, go to the current location.
+With a prefix ARG, remove start location."
+    (interactive "P")
+    (org-noter--with-valid-session
+     (let ((inhibit-read-only t)
+           (ast (org-noter--parse-root))
+           (location (org-noter--doc-approx-location (when (called-interactively-p 'any) 'interactive))))
+       (with-current-buffer (org-noter--session-notes-buffer session)
+         (org-with-wide-buffer
+          (goto-char (org-element-property :begin ast))
+          (if arg
+              (org-entry-delete nil org-noter-property-note-location)
+            (org-entry-put nil org-noter-property-note-location
+                           (org-noter--pretty-print-location location))))))))
+  (with-eval-after-load 'pdf-annot
+    (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
 ;;(use-package org-noter
 ;;  :after pdf-tools 
 ;;  :ensure t
@@ -722,7 +754,8 @@
   (setq org-noter-notes-search-path (list (concat org-dir "Noter/"))
         org-noter-default-notes-file-name '("notes.org")))
   (require 'org-noter-pdftools)
-  
+
+
 (use-package org-ac
   :config
   (org-ac/config-default))
@@ -735,72 +768,6 @@
     (ac-config-default)
     (global-auto-complete-mode t)))
 
-;; mu4e (wsl)
-
-;;(use-package mu4e
-;;  :ensure nil
-;;  :functions (mu4e-compose-reply
-;;              mu4e~view-quit-buffer)
-;;  :defines (mu4e-html2text-command
-;;            mu4e-mu-binary
-;;            mu4e-get-mail-command
-;;            mu4e-update-interval
-;;            mu4e-hide-index-messages
-;;            mu4e-use-fancy-chars
-;;            mu4e-view-show-images
-;;            mu4e-view-fields
-;;            mu4e-headers-fields
-;;            mu4e-compose-cite-function
-;;            mu4e-compose-reply-recepients
-;;            mu4e-headers-mode-map
-;;            mu4e-compose-mode-map
-;;            mu4e-view-mode-map
-;;            shr-color-visible-luminance-min
-;;            shr-color-visible-distance-min)
-;;  :custom
-;;  (mu4e-compose-reply-recepients 'sender)
-;;  (mu4e-compose-signature-auto-include nil)
-;;  (mu4e-index-update-in-background nil)
-;;  :commands (mu4e mu4e-compose-new)
-;;  :load-path '("/usr/local/share/emacs/site-lisp/mu4e/")
-;;  :config
-;;  (require 'sendmail)
-;;  (require 'mu4e-contrib)
-;;  (setq mu4e-html2text-command 'mu4e-shr2text)
-;;  (setq shr-color-visible-luminance-min 60)
-;;  (setq shr-color-visible-distance-min 5)
-;;  (setq shr-use-colors nil)
-;;  (advice-add #'shr-colorize-region :around
-;;              (defun shr-no-colourise-region (&rest ignore)))
-;;  (require 'org-mu4e)
-;;  (add-to-list 'Info-additional-directory-list "/usr/local/share/info")
-;;  (setq mu4e-mu-binary "/usr/local/bin/mu")
-;;  (setq mail-user-agent 'mu4e-user-agent)
-;;  (setq mu4e-get-mail-command "offlineimap -c ~/.offlineimaprc -u quiet")
-;;  (setq mu4e-update-interval 300)
-;;  (setq mu4e-hide-index-messages t)
-;;  (setq mu4e-use-fancy-chars nil)
-;;  (setq mu4e-view-show-images t)
-;;  (setq mu4e-view-fields
-;;        '(:subject :from :to :cc :date :mailing-list
-;;                   :attachments :signature :decryption))
-;;  (setq mu4e-headers-fields
-;;        '((:human-date  . 12)
-;;          (:flags  . 6)
-;;          (:from  . 22)
-;;          (:subject  . nil)))
-;;  (setq mu4e-compose-cite-function 'mu-cite-original)
-;;  (add-hook 'mu4e-view-mode-hook 'visual-line-mode)
-;;  (add-hook 'mu4e-compose-mode-hook 'orgalist-mode)
-;;  (add-hook 'mu4e-compose-mode-hook (lambda () (auto-fill-mode -1)))
-;;
-;;  (setq mu4e-maildir-shortcuts
-;;        '(("/outlook/Inbox" . ?i)
-;;          ("/outlook/Sent"  . ?s)))
-;;
-;;  (setq send-mail-function 'smtpmail-send-it
-;;        smptpmail-stream-type 'starttls
-;;        smptpmail-smtp-service 587))
 
 (straight-use-package
  '(org-imenu :type git :host github :repo "rougier/org-imenu"))
