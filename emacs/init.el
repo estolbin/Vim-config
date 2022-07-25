@@ -20,6 +20,7 @@
   (load bootstrap-file nil 'nomessage))
 
 
+
 (setq bmw/face-height-default
       (if (eq system-type 'darwin)
           180
@@ -734,6 +735,7 @@ With a prefix ARG, remove start location."
                            (org-noter--pretty-print-location location))))))))
   (with-eval-after-load 'pdf-annot
     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
+
 ;;(use-package org-noter
 ;;  :after pdf-tools 
 ;;  :ensure t
@@ -752,8 +754,8 @@ With a prefix ARG, remove start location."
   (org-noter-hide-other nil)
   :config
   (setq org-noter-notes-search-path (list (concat org-dir "Noter/"))
-        org-noter-default-notes-file-name '("notes.org")))
-  (require 'org-noter-pdftools)
+        org-noter-default-notes-file-name '("notes.org"))
+  (require 'org-noter-pdftools))
 
 
 (use-package org-ac
