@@ -265,6 +265,7 @@
 ;;(setq nano-font-family-proportional nil)
 ;;(setq nano-font-size 11)
 (require 'nano-theme)
+(setq nano-fonts-use t)
 (nano-theme)
 
 (require 'nano-colors)
@@ -349,6 +350,7 @@
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
 
+
 (use-package hydra
   :defer t)
 
@@ -418,8 +420,10 @@
   (setq org-directory org-dir)
   (setq org-agenda-files (list org-dir))
 
+  (add-to-list 'org-global-properties
+               '("Effort_ALL" . "0:05 0:15 0:30 1:00 2:00 3:00 4:00"))
   (require 'org-habit)
-  (add-to-list 'org-modules 'org-habit)
+  (add-to-list 'org-modules 'org-habit t)
   (setq org-habit-graph-column 60)
   (setq org-tag-alist
 	    '((:startgroup)
@@ -491,6 +495,17 @@
   
 (efs/org-font-setup)
 
+;;(use-package org-agenda
+;;  :ensure nil
+;;  :after org-gtd
+;;  :custom
+;;  (org-agenda-window-setup 'only-window))
+
+(add-hook 'minibuffer-setup-hook 'my/minibuffer-setup)
+(defun my/minibuffer-setup ()
+  (set (make-local-variable 'face-remapping-alist)
+                            '((default :height 0.9))))
+
 (use-package org-bullets
   :after org
   :hook (org-mode . org-bullets-mode)
@@ -544,16 +559,16 @@
     (setq-local completion-cycle-threshold t)
     (setq-local ledger-complete-in-steps t)))
 
-(use-package ledger-mode
-  :ensure t
-  :init
-  (setq ledger-clear-whole-transaction 1)
-
-  :config
-  (add-to-list 'evil-emacs-state-modes 'ledger-report-mode)
-;;  :hook (
-  :mode "\\.dat\\'"
-        "\\.ledger\\'")
+;;(use-package ledger-mode
+;;  :ensure t
+;;  :init
+;;  (setq ledger-clear-whole-transaction 1)
+;;
+;;  :config
+;;  (add-to-list 'evil-emacs-state-modes 'ledger-report-mode)
+;;;;  :hook (
+;;  :mode "\\.dat\\'"
+;;        "\\.ledger\\'")
 
 
 ;; my often use files
@@ -601,10 +616,16 @@
   (reverse-im-mode t))
 
 (setq-default
- org-babel-load-languages '((ledger . t)
-			    (emacs-lisp . t)))
+ ;; org-babel-load-languages '((ledger . t)
+ org-babel-load-languages '((emacs-lisp . t)))
 
-;;(use-package pdf-tools
+(use-package pdf-tools
+  :magic ("%PDF" . pdf-view-mode)
+  :load-path "/usr/share/emacs/site-lisp/pfg-tools"
+  :init
+  (pdf-tools-install)
+  :custom
+  (pdf-view-display-size 'fit-heitht))
 ;;  :ensure t
 ;;  :config
 ;;  (pdf-tools-install))
@@ -617,7 +638,7 @@
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory (concat org-dir "RoamNotes/"))
+  (org-roam-directory (concat org-dir "/RoamNotes/"))
   (org-roam-db-location (expand-file-name "org-roam.db" org-roam-directory))
   (org-roam-completion-everywhere t)
   :config
@@ -681,13 +702,27 @@
 					  '(:immediate-finish t)))))
   (apply #'org-roam-node-insert args)))
 
+;;(use-package org-noter
+;;  :after pdf-tools 
+;;  :ensure t
+;;  :config
+;;  (setq org-noter-notes-search-path (list (concat org-dir "Noter/"))
+;;	org-noter-default-notes-file-name '("notes.org")))
 (use-package org-noter
-  :after pdf-tools 
-  :ensure t
+  :after (:any org pdf-view org-noter-pdftools)
+  :bind ((:map org-mode-map ("C-c o" . org-noter))
+         (:map org-noter-notes-mode-map
+               ("C-c k" . org-noter-pdftools-create-skeleton)
+               ("C-c q" . org-noter-kill-session)))
+  :custom
+  (org-noter-always-create-frame nil)
+  (org-noter-kill-frame-at-session nil)
+  (org-noter-hide-other nil)
   :config
   (setq org-noter-notes-search-path (list (concat org-dir "Noter/"))
-	org-noter-default-notes-file-name '("notes.org")))
-
+        org-noter-default-notes-file-name '("notes.org")))
+  (require 'org-noter-pdftools)
+  
 (use-package org-ac
   :config
   (org-ac/config-default))
@@ -700,6 +735,178 @@
     (ac-config-default)
     (global-auto-complete-mode t)))
 
+;; mu4e (wsl)
+
+;;(use-package mu4e
+;;  :ensure nil
+;;  :functions (mu4e-compose-reply
+;;              mu4e~view-quit-buffer)
+;;  :defines (mu4e-html2text-command
+;;            mu4e-mu-binary
+;;            mu4e-get-mail-command
+;;            mu4e-update-interval
+;;            mu4e-hide-index-messages
+;;            mu4e-use-fancy-chars
+;;            mu4e-view-show-images
+;;            mu4e-view-fields
+;;            mu4e-headers-fields
+;;            mu4e-compose-cite-function
+;;            mu4e-compose-reply-recepients
+;;            mu4e-headers-mode-map
+;;            mu4e-compose-mode-map
+;;            mu4e-view-mode-map
+;;            shr-color-visible-luminance-min
+;;            shr-color-visible-distance-min)
+;;  :custom
+;;  (mu4e-compose-reply-recepients 'sender)
+;;  (mu4e-compose-signature-auto-include nil)
+;;  (mu4e-index-update-in-background nil)
+;;  :commands (mu4e mu4e-compose-new)
+;;  :load-path '("/usr/local/share/emacs/site-lisp/mu4e/")
+;;  :config
+;;  (require 'sendmail)
+;;  (require 'mu4e-contrib)
+;;  (setq mu4e-html2text-command 'mu4e-shr2text)
+;;  (setq shr-color-visible-luminance-min 60)
+;;  (setq shr-color-visible-distance-min 5)
+;;  (setq shr-use-colors nil)
+;;  (advice-add #'shr-colorize-region :around
+;;              (defun shr-no-colourise-region (&rest ignore)))
+;;  (require 'org-mu4e)
+;;  (add-to-list 'Info-additional-directory-list "/usr/local/share/info")
+;;  (setq mu4e-mu-binary "/usr/local/bin/mu")
+;;  (setq mail-user-agent 'mu4e-user-agent)
+;;  (setq mu4e-get-mail-command "offlineimap -c ~/.offlineimaprc -u quiet")
+;;  (setq mu4e-update-interval 300)
+;;  (setq mu4e-hide-index-messages t)
+;;  (setq mu4e-use-fancy-chars nil)
+;;  (setq mu4e-view-show-images t)
+;;  (setq mu4e-view-fields
+;;        '(:subject :from :to :cc :date :mailing-list
+;;                   :attachments :signature :decryption))
+;;  (setq mu4e-headers-fields
+;;        '((:human-date  . 12)
+;;          (:flags  . 6)
+;;          (:from  . 22)
+;;          (:subject  . nil)))
+;;  (setq mu4e-compose-cite-function 'mu-cite-original)
+;;  (add-hook 'mu4e-view-mode-hook 'visual-line-mode)
+;;  (add-hook 'mu4e-compose-mode-hook 'orgalist-mode)
+;;  (add-hook 'mu4e-compose-mode-hook (lambda () (auto-fill-mode -1)))
+;;
+;;  (setq mu4e-maildir-shortcuts
+;;        '(("/outlook/Inbox" . ?i)
+;;          ("/outlook/Sent"  . ?s)))
+;;
+;;  (setq send-mail-function 'smtpmail-send-it
+;;        smptpmail-stream-type 'starttls
+;;        smptpmail-smtp-service 587))
+
+(straight-use-package
+ '(org-imenu :type git :host github :repo "rougier/org-imenu"))
+
+(use-package imenu-list)
+;; imenu - sidebar
+(require 'imenu)
+(require 'imenu-list)
+
+(defvar my/org-blocks-hidden nil)
+
+(defun my/org-tree-to-indirect-buffer()
+  "Create indirect buffer, narrow it to current subtree and unfold blocks"
+
+  (org-tree-to-indirect-buffer)
+  (org-show-block-all)
+  (setq-local my/org-blocks-hidden nil))
+
+(defun my/org-sidebar ()
+  "Open a menu list on left that allow navigations"
+
+  (interactive)
+  (setq imenu-list-after-jump-hook #'my/org-tree-to-indirect-buffer
+        imenu-list-position 'left
+        imenu-list-size 36
+        imenu-list-focus-after-activation t)
+
+  (let ((heading (substring-no-properties (or (org-get-heading t t t t) "" ))))
+    (when (buffer-base-buffer)
+      (switch-to-buffer (buffer-base-buffer)))
+    (imenu-list-minor-mode)
+    (imenu-list-stop-timer)
+    (hl-line-mode)
+    (face-remap-add-relative 'hl-line :inherit 'nano-strong-i)
+    (setq header-line-format
+          '(:eval
+            (nano-modeline-render nil
+                                  (buffer-name imenu-list--displayed-buffer)
+                                  "(outline)"
+                                  "")))
+    (setq-local cursor-type nil)
+    (when (> (length heading) 0)
+      (goto-char (point-min))
+      (search-forward heading)
+      (imenu-list-display-dwim))))
+
+(defun my/org-sidebar-toggle ()
+  "Toggle the org-sidebar"
+
+  (interactive)
+  (if (get-buffer-window "*Ilist*")
+      (progn
+        (quit-window nil (get-buffer-window "*Ilist*"))
+        (switch-to-buffer (buffer-base-buffer)))
+    (my/org-sidebar)))
+
+(defvar my/imenu-list-folding-status t)
+
+(defun my/imenu-list-toggle-folding ()
+  "Toggle top level nodes of the imenu-list buffer"
+
+  (interactive)
+  (with-current-buffer "*Ilist*"
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\+ " nil t)
+        (if my/imenu-list-folding-status
+            (hs-hide-block)
+          (hs-show-block)))
+      (setq my/imenu-list-folding-status (not my/imenu-list-folding-status)))))
+(bind-key "S-<tab>" #'my/imenu-list-toggle-folding imenu-list-major-mode-map)
+
+(defun my/display-code-line-counts (ov)
+  (when (eq 'code (overlay-get ov 'hs))
+    (overlay-put ov 'display
+                 (propertize
+                  (format " [%d sections] … "
+                          (- (count-lines (overlay-start ov)
+                                       (overlay-end ov)) 1))
+                  'face 'nano-faded))))
+
+(setq hs-set-up-overlay #'my/display-code-line-counts)
+(defun my/imenu-list-display-dwim ()
+  "Display or toggle the entry at `point'."
+  (interactive)
+  (save-selected-window
+    (save-excursion
+      (my/imenu-list-ret-dwim))))
+
+(defun my/imenu-list-ret-dwim ()
+  "Jump to or toggle the entry at `point'."
+  (interactive)
+  (save-excursion
+    (let ((entry (imenu-list--find-entry)))
+      (when (imenu--subalist-p entry)
+        (setq entry (cons
+                     (car entry)
+                     (get-text-property 0 'marker (car entry)))))
+      (imenu-list--goto-entry entry))))
+
+(bind-key "<SPC>" #'my/imenu-list-display-dwim imenu-list-major-mode-map)
+(bind-key "<return>" #'my/imenu-list-ret-dwim imenu-list-major-mode-map)
+
+(bind-key "C-c f" #'my/org-imenu-filter)
+(bind-key "f" #'my/org-imenu-filter imenu-list-major-mode-map)
+(bind-key "U" #'imenu-list-refresh imenu-list-major-mode-map)
 
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
@@ -707,6 +914,7 @@
 (set-fringe-mode 10)
 (show-paren-mode 1)
 (menu-bar-mode -1)
+(winner-mode 1)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
