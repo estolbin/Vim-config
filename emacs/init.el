@@ -430,7 +430,8 @@
 	    '((:startgroup)
           ("@дом" . ?h)
           ("@офис" . ?w)
-          ("@везде" . ?a)
+          ("@дорога" . ?r)
+          ("@дача" . ?a)
           (:endgroup)
           (:startgroup)
           ("@звонок" . ?c)
@@ -440,6 +441,7 @@
           (:startgroup)
           ("Дениска" . ?D)
           ("Наташка" . ?N)
+          ("Данилка" . ?d)
           (:endgroup)))
   
   (setq org-todo-keywords
